@@ -110,33 +110,54 @@
 
       stocks.forEach((stock, index) => {
         const tr = document.createElement("tr");
-        tr.innerHTML = `
-          <td>${stock.name}</td>
-          <td>${stock.dividend}</td>
-          <td>${stock.targetYield}</td>
-          <td><input type="number" id="price-${group}-${index}" placeholder="株価" style="width:80px;"></td>
-          <td><input type="number" id="qty-${group}-${index}" placeholder="株数" style="width:60px;"></td>
-          <td id="yield-${group}-${index}">-</td>
-          <td id="judge-${group}-${index}">-</td>
-        `;
-        tbody.appendChild(tr);
 
-        const priceInput = tr.querySelector(`#price-${group}-${index}`);
-        const qtyInput = tr.querySelector(`#qty-${group}-${index}`);
-        const yieldCell = tr.querySelector(`#yield-${group}-${index}`);
-        const judgeCell = tr.querySelector(`#judge-${group}-${index}`);
+        const nameTd = document.createElement("td");
+        nameTd.textContent = stock.name;
+
+        const dividendTd = document.createElement("td");
+        dividendTd.textContent = stock.dividend;
+
+        const targetYieldTd = document.createElement("td");
+        targetYieldTd.textContent = stock.targetYield;
+
+        const priceInput = document.createElement("input");
+        priceInput.type = "number";
+        priceInput.id = `price-${group}-${index}`;
+        priceInput.placeholder = "株価";
+        priceInput.style.width = "80px";
+        const priceTd = document.createElement("td");
+        priceTd.appendChild(priceInput);
+
+        const qtyInput = document.createElement("input");
+        qtyInput.type = "number";
+        qtyInput.id = `qty-${group}-${index}`;
+        qtyInput.placeholder = "株数";
+        qtyInput.style.width = "60px";
+        const qtyTd = document.createElement("td");
+        qtyTd.appendChild(qtyInput);
+
+        const yieldTd = document.createElement("td");
+        yieldTd.id = `yield-${group}-${index}`;
+        yieldTd.textContent = "-";
+
+        const judgeTd = document.createElement("td");
+        judgeTd.id = `judge-${group}-${index}`;
+        judgeTd.textContent = "-";
+
+        tr.append(nameTd, dividendTd, targetYieldTd, priceTd, qtyTd, yieldTd, judgeTd);
+        tbody.appendChild(tr);
 
         priceInput.addEventListener('input', () => {
           const price = parseFloat(priceInput.value);
           if (!isNaN(price) && price > 0) {
             const yieldValue = (stock.dividend / price * 100).toFixed(2);
-            yieldCell.textContent = yieldValue;
-            judgeCell.textContent = yieldValue >= stock.targetYield ? 'OK' : '✕';
-            judgeCell.className = yieldValue >= stock.targetYield ? 'ok' : 'ng';
+            yieldTd.textContent = yieldValue;
+            judgeTd.textContent = yieldValue >= stock.targetYield ? 'OK' : '✕';
+            judgeTd.className = yieldValue >= stock.targetYield ? 'ok' : 'ng';
           } else {
-            yieldCell.textContent = '-';
-            judgeCell.textContent = '-';
-            judgeCell.className = '';
+            yieldTd.textContent = '-';
+            judgeTd.textContent = '-';
+            judgeTd.className = '';
           }
           updateSummary(stocks, group, summary);
         });
@@ -180,4 +201,13 @@
         const qtyInput = document.getElementById(`qty-${group}-${index}`);
         if (qtyInput) qtyInput.value = '';
       });
-      const summaryId = group === 'japan' ? "summary-j
+      const summaryId = group === 'japan' ? "summary-japan" : "summary-us";
+      const summary = document.getElementById(summaryId);
+      updateSummary(stocks, group, summary);
+    }
+
+    renderTable(japanStocks, "stock-table-japan", "summary-japan", "japan");
+    renderTable(usStocks, "stock-table-us", "summary-us", "us");
+  </script>
+</body>
+</html>
