@@ -93,14 +93,14 @@
       { name: '野村HD', dividend: 57, targetYield: 4.0 },
       { name: 'アサヒ', dividend: 52, targetYield: 4.0 },
       { name: '王子HD', dividend: 36, targetYield: 4.0 },
-      { name: 'LIXIL', dividend: 90, targetYield: 4.0 }
+      { name: 'LIXIL', dividend: 90, targetYield: 4.0 },
+      { name: 'HDV（2013）', dividend: 250, targetYield: 4.0 }
     ];
 
     const usStocks = [
       { name: 'VYM', dividend: 200, targetYield: 4.0 },
       { name: 'SPYD', dividend: 220, targetYield: 4.0 },
-      { name: 'SCHD', dividend: 210, targetYield: 4.0 },
-      { name: 'HDV（2013）', dividend: 250, targetYield: 4.0 }
+      { name: 'SCHD', dividend: 210, targetYield: 4.0 }
     ];
 
     function renderTable(stocks, tbodyId, summaryId, group) {
@@ -180,13 +180,4 @@
         const qtyInput = document.getElementById(`qty-${group}-${index}`);
         if (qtyInput) qtyInput.value = '';
       });
-      const summaryId = group === 'japan' ? "summary-japan" : "summary-us";
-      const summary = document.getElementById(summaryId);
-      updateSummary(stocks, group, summary);
-    }
-
-    renderTable(japanStocks, "stock-table-japan", "summary-japan", "japan");
-    renderTable(usStocks, "stock-table-us", "summary-us", "us");
-  </script>
-</body>
-</html>
+      const summaryId = group === 'japan' ? "summary-j
