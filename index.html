@@ -75,6 +75,45 @@
       { name: '王子HD', dividend: 36, targetYield: 4.0 },
       { name: 'LIXIL', dividend: 90, targetYield: 4.0 }
     ];
+
     const usStocks = [
       { name: 'VYM', dividend: 200, targetYield: 4.0 },
       { name: 'SPYD', dividend: 220, targetYield: 4.0 },
+      { name: 'SCHD', dividend: 210, targetYield: 4.0 }
+    ];
+
+    const hdvStocks = [
+      { name: 'HDV', dividend: 230, targetYield: 4.0 }
+    ];
+
+    function renderTable(stockList, tableId, summaryId) {
+      const table = document.getElementById(tableId);
+      table.innerHTML = '';
+      let totalDividend = 0;
+      let totalQuantity = 0;
+
+      stockList.forEach(stock => {
+        stock.price = stock.dividend / (stock.targetYield / 100); // 仮価格
+        stock.quantity = stock.quantity || 0;
+        const yieldCalc = stock.price ? (stock.dividend / stock.price * 100).toFixed(2) : 0;
+        const isOk = yieldCalc >= stock.targetYield;
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${stock.name}</td>
+          <td>${stock.dividend}</td>
+          <td>${stock.targetYield}</td>
+          <td>${stock.price.toFixed(1)}</td>
+          <td><input type="number" min="0" value="${stock.quantity}" onchange="updateQuantity('${tableId}', '${summaryId}', ${stockList.indexOf(stock)}, this.value)"></td>
+          <td>${yieldCalc}</td>
+          <td class="${isOk ? 'ok' : 'ng'}">${isOk ? 'OK' : 'NG'}</td>
+        `;
+        table.appendChild(tr);
+        totalDividend += stock.dividend * stock.quantity;
+        totalQuantity += parseInt(stock.quantity);
+      });
+
+      document.getElementById(summaryId).innerText = `合計配当金: ${totalDividend.toFixed(0)} 円 / 合計株数: ${totalQuantity} 株`;
+      updateTotalSummary();
+    }
+
+    func
