@@ -7,7 +7,9 @@
   <style>
     body { font-family: sans-serif; padding: 20px; background-color: #f9f9f9; }
     h1 { text-align: center; }
-    #summary-all, #summary-japan, #summary-us, #summary-hdv { font-size: 1.2em; margin-bottom: 20px; }
+    #summary-all, #summary-japan, #summary-us, #summary-hdv {
+      font-size: 1.2em; margin-bottom: 20px;
+    }
     #summary-all { font-weight: bold; text-align: center; }
     table { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
     th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
@@ -61,29 +63,29 @@
 
   <script>
     const japanStocks = [
-      { name: 'JT', dividend: 194, targetYield: 4.0 },
-      { name: 'ENEOS', dividend: 30, targetYield: 4.0 },
-      { name: 'NTT', dividend: 5.3, targetYield: 4.0 },
-      { name: 'INPEX', dividend: 90, targetYield: 4.0 },
-      { name: '大和ハウス', dividend: 165, targetYield: 4.0 },
-      { name: '積水ハウス', dividend: 144, targetYield: 4.0 },
-      { name: '電通', dividend: 139.5, targetYield: 4.0 },
-      { name: 'トヨタ', dividend: 95, targetYield: 3.5 },
-      { name: '東京海上', dividend: 172, targetYield: 4.0 },
-      { name: '野村HD', dividend: 57, targetYield: 4.0 },
-      { name: 'アサヒ', dividend: 52, targetYield: 4.0 },
-      { name: '王子HD', dividend: 36, targetYield: 4.0 },
-      { name: 'LIXIL', dividend: 90, targetYield: 4.0 }
+      { name: 'JT', dividend: 194, targetYield: 4.0, price: 4800 },
+      { name: 'ENEOS', dividend: 30, targetYield: 4.0, price: 600 },
+      { name: 'NTT', dividend: 5.3, targetYield: 4.0, price: 160 },
+      { name: 'INPEX', dividend: 90, targetYield: 4.0, price: 2200 },
+      { name: '大和ハウス', dividend: 165, targetYield: 4.0, price: 3500 },
+      { name: '積水ハウス', dividend: 144, targetYield: 4.0, price: 3300 },
+      { name: '電通', dividend: 139.5, targetYield: 4.0, price: 4300 },
+      { name: 'トヨタ', dividend: 95, targetYield: 3.5, price: 2900 },
+      { name: '東京海上', dividend: 172, targetYield: 4.0, price: 4200 },
+      { name: '野村HD', dividend: 57, targetYield: 4.0, price: 630 },
+      { name: 'アサヒ', dividend: 52, targetYield: 4.0, price: 5100 },
+      { name: '王子HD', dividend: 36, targetYield: 4.0, price: 610 },
+      { name: 'LIXIL', dividend: 90, targetYield: 4.0, price: 1850 }
     ];
 
     const usStocks = [
-      { name: 'VYM', dividend: 200, targetYield: 4.0 },
-      { name: 'SPYD', dividend: 220, targetYield: 4.0 },
-      { name: 'SCHD', dividend: 210, targetYield: 4.0 }
+      { name: 'VYM', dividend: 200, targetYield: 4.0, price: 5000 },
+      { name: 'SPYD', dividend: 220, targetYield: 4.0, price: 4600 },
+      { name: 'SCHD', dividend: 210, targetYield: 4.0, price: 5400 }
     ];
 
     const hdvStocks = [
-      { name: 'HDV', dividend: 5.7, targetYield: 4.0 }
+      { name: 'HDV', dividend: 5.7, targetYield: 4.0, price: 180 }
     ];
 
     function renderTable(stockList, tableId, summaryId) {
@@ -93,9 +95,7 @@
       let totalQuantity = 0;
 
       stockList.forEach((stock, index) => {
-        stock.price = stock.price || (stock.dividend / (stock.targetYield / 100));
         stock.quantity = stock.quantity || 0;
-
         const yieldCalc = stock.price ? (stock.dividend / stock.price * 100).toFixed(2) : 0;
         const isOk = yieldCalc >= stock.targetYield;
 
