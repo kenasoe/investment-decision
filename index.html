@@ -7,16 +7,18 @@
   <style>
     body { font-family: sans-serif; padding: 20px; background-color: #f9f9f9; }
     h1 { text-align: center; }
+    #summary-all, #summary-japan, #summary-us, #summary-hdv { font-size: 1.2em; margin-bottom: 20px; }
+    #summary-all { font-weight: bold; text-align: center; }
     table { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
     th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
     th { background-color: #eee; }
     .ok { color: green; font-weight: bold; }
     .ng { color: red; font-weight: bold; }
-    #summary-japan, #summary-us, #summary-hdv { font-size: 1.2em; margin-bottom: 20px; }
   </style>
 </head>
 <body>
   <h1>配当利回りチェッカー</h1>
+  <div id="summary-all">全体合計 配当金: 0 円 / 合計株数: 0 株</div>
 
   <h2>日本株</h2>
   <div id="summary-japan">合計配当金: 0 円 / 合計株数: 0 株</div>
@@ -76,40 +78,3 @@
     const usStocks = [
       { name: 'VYM', dividend: 200, targetYield: 4.0 },
       { name: 'SPYD', dividend: 220, targetYield: 4.0 },
-      { name: 'SCHD', dividend: 210, targetYield: 4.0 }
-    ];
-    const hdvStock = [ { name: 'HDV', dividend: 250, targetYield: 4.0 } ];
-
-    function renderTable(stocks, tbodyId, summaryId, group) {
-      const tbody = document.getElementById(tbodyId);
-      tbody.innerHTML = '';
-      stocks.forEach((stock, index) => {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td>${stock.name}</td>
-          <td>${stock.dividend}</td>
-          <td>${stock.targetYield.toFixed(1)}</td>
-          <td><input type="number" id="price-${group}-${index}" placeholder="株価" style="width:80px;"></td>
-          <td><input type="number" id="qty-${group}-${index}" placeholder="株数" style="width:60px;"></td>
-          <td id="yield-${group}-${index}"></td>
-          <td id="status-${group}-${index}"></td>
-        `;
-        tbody.appendChild(tr);
-      });
-    }
-
-    function resetQuantities(group) {
-      document.querySelectorAll(`[id^="qty-${group}-"]`).forEach(i => i.value = '');
-      document.querySelectorAll(`[id^="yield-${group}-"]`).forEach(td => td.textContent = '');
-      document.querySelectorAll(`[id^="status-${group}-"]`).forEach(td => td.textContent = '');
-      document.getElementById(`summary-${group}`).textContent = '合計配当金: 0 円 / 合計株数: 0 株';
-    }
-
-    document.addEventListener('DOMContentLoaded', () => {
-      renderTable(japanStocks, 'stock-table-japan', 'summary-japan', 'japan');
-      renderTable(usStocks,    'stock-table-us',    'summary-us',    'us');
-      renderTable(hdvStock,    'stock-table-hdv',   'summary-hdv',   'hdv');
-    });
-  </script>
-</body>
-</html>
