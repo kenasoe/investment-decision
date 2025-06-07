@@ -1,5 +1,45 @@
-<!-- 省略された上部はそのまま -->
-
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>配当利回りチェッカー</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 20px;
+      background-color: #f9f9f9;
+    }
+    h1 {
+      text-align: center;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 30px;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 8px;
+      text-align: center;
+    }
+    th {
+      background-color: #eee;
+    }
+    .ok {
+      color: green;
+      font-weight: bold;
+    }
+    .ng {
+      color: red;
+      font-weight: bold;
+    }
+    #summary-japan, #summary-us {
+      font-size: 1.2em;
+      margin-bottom: 20px;
+    }
+  </style>
+</head>
 <body>
   <h1>配当利回りチェッカー</h1>
 
@@ -106,7 +146,7 @@
         });
       });
 
-      updateSummary(stocks, group, summary); // 初期表示
+      updateSummary(stocks, group, summary);
     }
 
     function updateSummary(stocks, group, summary) {
@@ -142,4 +182,11 @@
       });
       const summaryId = group === 'japan' ? "summary-japan" : "summary-us";
       const summary = document.getElementById(summaryId);
-      updateSummary(stocks, gr
+      updateSummary(stocks, group, summary);
+    }
+
+    renderTable(japanStocks, "stock-table-japan", "summary-japan", "japan");
+    renderTable(usStocks, "stock-table-us", "summary-us", "us");
+  </script>
+</body>
+</html>
