@@ -96,7 +96,12 @@
 
       stockList.forEach((stock, index) => {
         stock.quantity = stock.quantity || 0;
-        const yieldCalc = stock.price ? (stock.dividend / stock.price * 100).toFixed(2) : 0;
+        let yieldCalc = '0.00';
+        if (tableId === 'stock-table-us') {
+          yieldCalc = stock.basePrice ? (stock.dividend / stock.basePrice * 100).toFixed(2) : '0.00';
+        } else {
+          yieldCalc = stock.price ? (stock.dividend / stock.price * 100).toFixed(2) : '0.00';
+        }
         const isOk = stock.targetYield !== undefined ? yieldCalc >= stock.targetYield : null;
 
         const tr = document.createElement('tr');
