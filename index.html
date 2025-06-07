@@ -98,23 +98,42 @@
   </table>
 
   <script>
-    const japanStocks = [...]; // 省略
+    const japanStocks = [
+      { name: 'JT', dividend: 194, targetYield: 4.0 },
+      { name: 'ENEOS', dividend: 30, targetYield: 4.0 },
+      { name: 'NTT', dividend: 5.3, targetYield: 4.0 },
+      { name: 'INPEX', dividend: 90, targetYield: 4.0 },
+      { name: '大和ハウス', dividend: 165, targetYield: 4.0 },
+      { name: '積水ハウス', dividend: 144, targetYield: 4.0 },
+      { name: '電通', dividend: 139.5, targetYield: 4.0 },
+      { name: 'トヨタ', dividend: 95, targetYield: 4.0 },
+      { name: '東京海上', dividend: 172, targetYield: 4.0 },
+      { name: '野村HD', dividend: 57, targetYield: 4.0 },
+      { name: 'アサヒ', dividend: 52, targetYield: 4.0 },
+      { name: '王子HD', dividend: 36, targetYield: 4.0 },
+      { name: 'LIXIL', dividend: 90, targetYield: 4.0 }
+    ];
+
     const usStocks = [
       { name: 'VYM', dividend: 200, targetYield: 4.0 },
       { name: 'SPYD', dividend: 220, targetYield: 4.0 },
       { name: 'SCHD', dividend: 210, targetYield: 4.0 }
     ];
+
     const hdvStock = [
-      { name: 'HDV', dividend: 5.7, targetYield: 4.0 }
+      { name: 'HDV', dividend: 250, targetYield: 4.0 }
     ];
 
-    function renderTable(...) { ... }
-    function updateSummary(...) { ... }
-    function resetQuantities(...) { ... }
+    function renderTable(stocks, tbodyId, summaryId, group) {
+      const tbody = document.getElementById(tbodyId);
+      const summary = document.getElementById(summaryId);
+      const targetTotal = 410;
 
-    renderTable(japanStocks, "stock-table-japan", "summary-japan", "japan");
-    renderTable(usStocks, "stock-table-us", "summary-us", "us");
-    renderTable(hdvStock, "stock-table-hdv", "summary-hdv", "hdv");
-  </script>
-</body>
-</html>
+      stocks.forEach((stock, index) => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${stock.name}</td>
+          <td>${stock.dividend}</td>
+          <td>${stock.targetYield}</td>
+          <td><input type="number" id="price-${group}-${index}" placeholder="株価" style="width:80px;"></td>
+          <td><input type="number" id="qty-${group}-${index}" placeholder="株数" style="width:60px;"></td>
