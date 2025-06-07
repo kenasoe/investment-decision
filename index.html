@@ -42,7 +42,7 @@
     <thead>
       <tr>
         <th>銘柄名</th><th>配当金（円）</th><th>基準価格（円）</th>
-        <th>利回り（%）</th><th>株価（円）</th><th>株数</th>
+        <th>利回り（%）</th><th>投資額（円）</th><th>株数</th>
       </tr>
     </thead>
     <tbody id="stock-table-us"></tbody>
@@ -79,9 +79,9 @@
     ];
 
     const usStocks = [
-      { name: 'VYM', dividend: 310, basePrice: 5000, price: 5000 },
-      { name: 'SPYD', dividend: 455, basePrice: 4600, price: 4600 },
-      { name: 'SCHD', dividend: 325, basePrice: 5400, price: 5400 }
+      { name: 'VYM', dividend: 310, basePrice: 5000 },
+      { name: 'SPYD', dividend: 455, basePrice: 4600 },
+      { name: 'SCHD', dividend: 325, basePrice: 5400 }
     ];
 
     const hdvStocks = [
@@ -97,11 +97,17 @@
       stockList.forEach((stock, index) => {
         stock.quantity = stock.quantity || 0;
         let yieldCalc = '0.00';
+        let investAmount = '-';
+
         if (tableId === 'stock-table-us') {
           yieldCalc = stock.basePrice ? (stock.dividend / stock.basePrice * 100).toFixed(2) : '0.00';
+          investAmount = yieldCalc > 0
+            ? Math.ceil((11800 / parseFloat(yieldCalc)) / 100) * 100
+            : '-';
         } else {
           yieldCalc = stock.price ? (stock.dividend / stock.price * 100).toFixed(2) : '0.00';
         }
+
         const isOk = stock.targetYield !== undefined ? yieldCalc >= stock.targetYield : null;
 
         const tr = document.createElement('tr');
@@ -113,8 +119,7 @@
             <td><input type="number" min="0" value="${stock.basePrice}"
               onchange="updateBasePrice('${tableId}', '${summaryId}', ${index}, this.value)"></td>
             <td>${yieldCalc}</td>
-            <td><input type="number" min="1" value="${stock.price.toFixed(1)}"
-              onchange="updatePrice('${tableId}', '${summaryId}', ${index}, this.value)"></td>
+            <td>${investAmount}</td>
             <td><input type="number" min="0" value="${stock.quantity}"
               onchange="updateQuantity('${tableId}', '${summaryId}', ${index}, this.value)"></td>
           `;
