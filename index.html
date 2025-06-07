@@ -1,51 +1,11 @@
-<!DOCTYPE html>
-<html lang="ja">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>配当利回りチェッカー</title>
-  <style>
-    body {
-      font-family: sans-serif;
-      padding: 20px;
-      background-color: #f9f9f9;
-    }
-    h1 {
-      text-align: center;
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-bottom: 30px;
-    }
-    th, td {
-      border: 1px solid #ccc;
-      padding: 8px;
-      text-align: center;
-    }
-    th {
-      background-color: #eee;
-    }
-    .ok {
-      color: green;
-      font-weight: bold;
-    }
-    .ng {
-      color: red;
-      font-weight: bold;
-    }
-    #summary {
-      font-size: 1.2em;
-      margin-bottom: 20px;
-    }
-  </style>
-</head>
+<!-- 省略された上部はそのまま -->
+
 <body>
   <h1>配当利回りチェッカー</h1>
 
-  <div id="summary">合計配当金: 0 円 / 合計株数: 0 株</div>
-  <button onclick="resetQuantities()">株数リセット</button>
-
+  <h2>日本株</h2>
+  <div id="summary-japan">合計配当金: 0 円 / 合計株数: 0 株</div>
+  <button onclick="resetQuantities('japan')">株数リセット</button>
   <table>
     <thead>
       <tr>
@@ -58,12 +18,29 @@
         <th>判定</th>
       </tr>
     </thead>
-    <tbody id="stock-table">
-    </tbody>
+    <tbody id="stock-table-japan"></tbody>
+  </table>
+
+  <h2>米国ETF</h2>
+  <div id="summary-us">合計配当金: 0 円 / 合計株数: 0 株</div>
+  <button onclick="resetQuantities('us')">株数リセット</button>
+  <table>
+    <thead>
+      <tr>
+        <th>銘柄名</th>
+        <th>配当金（円）</th>
+        <th>目標利回り（%）</th>
+        <th>株価（円）</th>
+        <th>株数</th>
+        <th>利回り（%）</th>
+        <th>判定</th>
+      </tr>
+    </thead>
+    <tbody id="stock-table-us"></tbody>
   </table>
 
   <script>
-    const stocks = [
+    const japanStocks = [
       { name: 'JT', dividend: 194, targetYield: 4.0 },
       { name: 'ENEOS', dividend: 30, targetYield: 4.0 },
       { name: 'NTT', dividend: 5.3, targetYield: 4.0 },
@@ -79,78 +56,90 @@
       { name: 'LIXIL', dividend: 90, targetYield: 4.0 }
     ];
 
-    const tbody = document.getElementById("stock-table");
-    const summary = document.getElementById("summary");
+    const usStocks = [
+      { name: 'VYM', dividend: 200, targetYield: 4.0 },
+      { name: 'SPYD', dividend: 220, targetYield: 4.0 },
+      { name: 'SCHD', dividend: 210, targetYield: 4.0 },
+      { name: 'HDV（2013）', dividend: 250, targetYield: 4.0 }
+    ];
 
-  function updateSummary() {
-  let totalDividend = 0;
-  let totalShares = 0;
-  const targetTotal = 410;
+    function renderTable(stocks, tbodyId, summaryId, group) {
+      const tbody = document.getElementById(tbodyId);
+      const summary = document.getElementById(summaryId);
+      const targetTotal = 410;
 
-  stocks.forEach((stock, index) => {
-    const qtyInput = document.getElementById(`qty-${index}`);
-    if (!qtyInput) return;
-    const qty = parseInt(qtyInput.value);
-    if (!isNaN(qty)) {
-      totalShares += qty;
-      totalDividend += qty * stock.dividend;
+      stocks.forEach((stock, index) => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${stock.name}</td>
+          <td>${stock.dividend}</td>
+          <td>${stock.targetYield}</td>
+          <td><input type="number" id="price-${group}-${index}" placeholder="株価" style="width:80px;"></td>
+          <td><input type="number" id="qty-${group}-${index}" placeholder="株数" style="width:60px;"></td>
+          <td id="yield-${group}-${index}">-</td>
+          <td id="judge-${group}-${index}">-</td>
+        `;
+        tbody.appendChild(tr);
+
+        const priceInput = tr.querySelector(`#price-${group}-${index}`);
+        const qtyInput = tr.querySelector(`#qty-${group}-${index}`);
+        const yieldCell = tr.querySelector(`#yield-${group}-${index}`);
+        const judgeCell = tr.querySelector(`#judge-${group}-${index}`);
+
+        priceInput.addEventListener('input', () => {
+          const price = parseFloat(priceInput.value);
+          if (!isNaN(price) && price > 0) {
+            const yieldValue = (stock.dividend / price * 100).toFixed(2);
+            yieldCell.textContent = yieldValue;
+            judgeCell.textContent = yieldValue >= stock.targetYield ? 'OK' : '✕';
+            judgeCell.className = yieldValue >= stock.targetYield ? 'ok' : 'ng';
+          } else {
+            yieldCell.textContent = '-';
+            judgeCell.textContent = '-';
+            judgeCell.className = '';
+          }
+          updateSummary(stocks, group, summary);
+        });
+
+        qtyInput.addEventListener('input', () => {
+          updateSummary(stocks, group, summary);
+        });
+      });
+
+      updateSummary(stocks, group, summary); // 初期表示
     }
-  });
 
-  const diff = totalDividend - targetTotal;
-  const diffText = diff >= 0 ? `+${diff.toLocaleString()}` : diff.toLocaleString();
+    function updateSummary(stocks, group, summary) {
+      let totalDividend = 0;
+      let totalShares = 0;
+      const targetTotal = 410;
 
- summary.innerHTML =
-  `合計配当金: ${totalDividend.toLocaleString()} 円<br>` +
-  `合計株数: ${totalShares.toLocaleString()} 株<br>` +
-  `目標: ${targetTotal.toLocaleString()} 円<br>` +
-  `差額: ${diffText} 円`;
+      stocks.forEach((stock, index) => {
+        const qtyInput = document.getElementById(`qty-${group}-${index}`);
+        if (!qtyInput) return;
+        const qty = parseInt(qtyInput.value);
+        if (!isNaN(qty)) {
+          totalShares += qty;
+          totalDividend += qty * stock.dividend;
+        }
+      });
 
+      const diff = totalDividend - targetTotal;
+      const diffText = diff >= 0 ? `+${diff.toLocaleString()}` : diff.toLocaleString();
 
+      summary.innerHTML =
+        `合計配当金: ${totalDividend.toLocaleString()} 円<br>` +
+        `合計株数: ${totalShares.toLocaleString()} 株<br>` +
+        `目標: ${targetTotal.toLocaleString()} 円<br>` +
+        `差額: ${diffText} 円`;
+    }
 
-    function resetQuantities() {
+    function resetQuantities(group) {
+      const stocks = group === 'japan' ? japanStocks : usStocks;
       stocks.forEach((_, index) => {
-        const qtyInput = document.getElementById(`qty-${index}`);
+        const qtyInput = document.getElementById(`qty-${group}-${index}`);
         if (qtyInput) qtyInput.value = '';
       });
-      updateSummary();
-    }
-
-    stocks.forEach((stock, index) => {
-      const tr = document.createElement("tr");
-      tr.innerHTML = `
-        <td>${stock.name}</td>
-        <td>${stock.dividend}</td>
-        <td>${stock.targetYield}</td>
-        <td><input type="number" id="price-${index}" placeholder="株価" style="width:80px;"></td>
-        <td><input type="number" id="qty-${index}" placeholder="株数" style="width:60px;"></td>
-        <td id="yield-${index}">-</td>
-        <td id="judge-${index}">-</td>
-      `;
-      tbody.appendChild(tr);
-
-      const priceInput = tr.querySelector(`#price-${index}`);
-      const qtyInput = tr.querySelector(`#qty-${index}`);
-      const yieldCell = tr.querySelector(`#yield-${index}`);
-      const judgeCell = tr.querySelector(`#judge-${index}`);
-
-      priceInput.addEventListener('input', () => {
-        const price = parseFloat(priceInput.value);
-        if (!isNaN(price) && price > 0) {
-          const yieldValue = (stock.dividend / price * 100).toFixed(2);
-          yieldCell.textContent = yieldValue;
-          judgeCell.textContent = yieldValue >= stock.targetYield ? 'OK' : '✕';
-          judgeCell.className = yieldValue >= stock.targetYield ? 'ok' : 'ng';
-        } else {
-          yieldCell.textContent = '-';
-          judgeCell.textContent = '-';
-          judgeCell.className = '';
-        }
-        updateSummary();
-      });
-
-      qtyInput.addEventListener('input', updateSummary);
-    });
-  </script>
-</body>
-</html>
+      const summaryId = group === 'japan' ? "summary-japan" : "summary-us";
+      const summary = document.getElementById(summaryId);
+      updateSummary(stocks, gr
