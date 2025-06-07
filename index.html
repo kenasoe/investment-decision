@@ -118,33 +118,27 @@
       `;
       tbody.appendChild(tr);
 
-      setTimeout(() => {
-        const priceInput = document.getElementById(`price-${index}`);
-        const qtyInput = document.getElementById(`qty-${index}`);
+      const priceInput = tr.querySelector(`#price-${index}`);
+      const qtyInput = tr.querySelector(`#qty-${index}`);
+      const yieldCell = tr.querySelector(`#yield-${index}`);
+      const judgeCell = tr.querySelector(`#judge-${index}`);
 
-        function updateRow() {
-          const price = parseFloat(priceInput.value);
-          const dividend = stock.dividend;
-          const target = stock.targetYield;
-
-          if (!isNaN(price) && price > 0) {
-            const yieldValue = (dividend / price * 100).toFixed(2);
-            document.getElementById(`yield-${index}`).innerText = yieldValue;
-            document.getElementById(`judge-${index}`).innerText =
-              yieldValue >= target ? 'OK' : '✕';
-            document.getElementById(`judge-${index}`).className =
-              yieldValue >= target ? 'ok' : 'ng';
-          } else {
-            document.getElementById(`yield-${index}`).innerText = '-';
-            document.getElementById(`judge-${index}`).innerText = '-';
-            document.getElementById(`judge-${index}`).className = '';
-          }
-          updateSummary();
+      priceInput.addEventListener('input', () => {
+        const price = parseFloat(priceInput.value);
+        if (!isNaN(price) && price > 0) {
+          const yieldValue = (stock.dividend / price * 100).toFixed(2);
+          yieldCell.textContent = yieldValue;
+          judgeCell.textContent = yieldValue >= stock.targetYield ? 'OK' : '✕';
+          judgeCell.className = yieldValue >= stock.targetYield ? 'ok' : 'ng';
+        } else {
+          yieldCell.textContent = '-';
+          judgeCell.textContent = '-';
+          judgeCell.className = '';
         }
+        updateSummary();
+      });
 
-        priceInput.addEventListener('input', updateRow);
-        qtyInput.addEventListener('input', updateSummary);
-      }, 0);
+      qtyInput.addEventListener('input', updateSummary);
     });
   </script>
 </body>
