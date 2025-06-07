@@ -7,7 +7,7 @@
   <style>
     body { font-family: sans-serif; padding: 20px; background-color: #f9f9f9; }
     h1 { text-align: center; }
-    #summary-all, #summary-japan, #summary-us, #summary-hdv {
+    #summary-all, #summary-japan, #summary-hdv {
       font-size: 1.2em; margin-bottom: 20px;
     }
     #summary-all { font-weight: bold; text-align: center; }
@@ -36,7 +36,6 @@
   </table>
 
   <h2>米国高配当株 (VYM, SPYD, SCHD)</h2>
-  <div id="summary-us">※株数入力なし</div>
   <button onclick="resetQuantities('us')">リセット</button>
   <table>
     <thead>
@@ -142,8 +141,11 @@
         }
       });
 
-      document.getElementById(summaryId).innerText =
-        `合計配当金: ${totalDividend.toFixed(0)} 円 / 合計株数: ${totalQuantity} 株`;
+      if (summaryId) {
+        document.getElementById(summaryId).innerText =
+          `合計配当金: ${totalDividend.toFixed(0)} 円 / 合計株数: ${totalQuantity} 株`;
+      }
+
       updateTotalSummary();
     }
 
@@ -174,12 +176,12 @@
       const tableId = type === 'japan' ? 'stock-table-japan' :
                       type === 'us' ? 'stock-table-us' : 'stock-table-hdv';
       const summaryId = type === 'japan' ? 'summary-japan' :
-                        type === 'us' ? 'summary-us' : 'summary-hdv';
+                        type === 'us' ? null : 'summary-hdv';
       renderTable(list, tableId, summaryId);
     }
 
     function updateTotalSummary() {
-      const allStocks = [...japanStocks, ...hdvStocks];
+      const allStocks = [...japanStocks, ...hdvStocks]; // usStocksは除外
       const totalDividend = allStocks.reduce((sum, s) => sum + s.dividend * (s.quantity || 0), 0);
       const totalQuantity = allStocks.reduce((sum, s) => sum + (s.quantity || 0), 0);
       document.getElementById('summary-all').innerText =
@@ -192,7 +194,7 @@
     }
 
     renderTable(japanStocks, 'stock-table-japan', 'summary-japan');
-    renderTable(usStocks, 'stock-table-us', 'summary-us');
+    renderTable(usStocks, 'stock-table-us', null);
     renderTable(hdvStocks, 'stock-table-hdv', 'summary-hdv');
   </script>
 </body>
