@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>配当利回りチェッカー</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 20px;
+      background-color: #f9f9f9;
+    }
+    h1 {
+      text-align: center;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 30px;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 8px;
+      text-align: center;
+    }
+    th {
+      background-color: #eee;
+    }
+    .ok {
+      color: green;
+      font-weight: bold;
+    }
+    .ng {
+      color: red;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <h1>配当利回りチェッカー</h1>
+  <table>
+    <thead>
+      <tr>
+        <th>銘柄名</th>
+        <th>配当金（円）</th>
+        <th>目標利回り（%）</th>
+        <th>株価（円）</th>
+        <th>利回り（%）</th>
+        <th>判定</th>
+      </tr>
+    </thead>
+    <tbody id="stock-table">
+    </tbody>
+  </table>
+
+  <script>
+    // あらかじめ登録された30銘柄（例示）
+    const stocks = [
+      { name: 'トヨタ自動車', dividend: 120, targetYield: 3.5 },
+      { name: 'NTT', dividend: 100, targetYield: 4.0 },
+      { name: '三菱商事', dividend: 150, targetYield: 4.5 },
+      { name: 'KDDI', dividend: 130, targetYield: 3.8 },
+      { name: '伊藤忠商事', dividend: 125, targetYield: 4.2 },
+      // 以下、仮のデータで30銘柄まで増やせます
+    ];
+
+    const tbody = document.getElementById("stock-table");
+
+    stocks.forEach((stock, index) => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${stock.name}</td>
+        <td>${stock.dividend}</td>
+        <td>${stock.targetYield}</td>
+        <td><input type="number" id="price-${index}" placeholder="株価" style="width:80px;"></td>
+        <td id="yield-${index}">-</td>
+        <td id="judge-${index}">-</td>
+      `;
+      tbody.appendChild(tr);
+    });
+
+    // イベント設定（自動計算）
+    document.querySelectorAll('input[type="number"]').forEach((input, index) => {
+      input.addEventListener('input', () => {
+        const price = parseFloat(input.value);
+        const dividend = stocks[index].dividend;
+        const target = stocks[index].targetYield;
+
+        if (!isNaN(price) && price > 0) {
+          const yieldValue = (dividend / price * 100).toFixed(2);
+          document.getElementById(`yield-${index}`).innerText = yieldValue;
+          document.getElementById(`judge-${index}`).innerText =
+            yieldValue >= target ? 'OK' : '✕';
+          document.getElementById(`judge-${index}`).className =
+            yieldValue >= target ? 'ok' : 'ng';
+        } else {
+          document.getElementById(`yield-${index}`).innerText = '-';
+          document.getElementById(`judge-${index}`).innerText = '-';
+          document.getElementById(`judge-${index}`).className = '';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
