@@ -5,29 +5,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>配当利回りチェッカー</title>
   <style>
-    body {
-      font-family: sans-serif;
-      padding: 20px;
-      background-color: #f9f9f9;
-    }
+    body { font-family: sans-serif; padding: 20px; background-color: #f9f9f9; }
     h1 { text-align: center; }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-bottom: 30px;
-    }
-    th, td {
-      border: 1px solid #ccc;
-      padding: 8px;
-      text-align: center;
-    }
+    table { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
     th { background-color: #eee; }
     .ok { color: green; font-weight: bold; }
     .ng { color: red; font-weight: bold; }
-    #summary-japan, #summary-us, #summary-hdv {
-      font-size: 1.2em;
-      margin-bottom: 20px;
-    }
+    #summary-japan, #summary-us, #summary-hdv { font-size: 1.2em; margin-bottom: 20px; }
   </style>
 </head>
 <body>
@@ -39,16 +24,37 @@
   <table>
     <thead>
       <tr>
-        <th>銘柄名</th>
-        <th>配当金（円）</th>
-        <th>目標利回り（%）</th>
-        <th>株価（円）</th>
-        <th>株数</th>
-        <th>利回り（%）</th>
-        <th>判定</th>
+        <th>銘柄名</th><th>配当金（円）</th><th>目標利回り（%）</th>
+        <th>株価（円）</th><th>株数</th><th>利回り（%）</th><th>判定</th>
       </tr>
     </thead>
     <tbody id="stock-table-japan"></tbody>
+  </table>
+
+  <h2>米国高配当株 (VYM, SPYD, SCHD)</h2>
+  <div id="summary-us">合計配当金: 0 円 / 合計株数: 0 株</div>
+  <button onclick="resetQuantities('us')">株数リセット</button>
+  <table>
+    <thead>
+      <tr>
+        <th>銘柄名</th><th>配当金（円）</th><th>目標利回り（%）</th>
+        <th>株価（円）</th><th>株数</th><th>利回り（%）</th><th>判定</th>
+      </tr>
+    </thead>
+    <tbody id="stock-table-us"></tbody>
+  </table>
+
+  <h2>HDV</h2>
+  <div id="summary-hdv">合計配当金: 0 円 / 合計株数: 0 株</div>
+  <button onclick="resetQuantities('hdv')">株数リセット</button>
+  <table>
+    <thead>
+      <tr>
+        <th>銘柄名</th><th>配当金（円）</th><th>目標利回り（%）</th>
+        <th>株価（円）</th><th>株数</th><th>利回り（%）</th><th>判定</th>
+      </tr>
+    </thead>
+    <tbody id="stock-table-hdv"></tbody>
   </table>
 
   <script>
@@ -67,6 +73,12 @@
       { name: '王子HD', dividend: 36, targetYield: 4.0 },
       { name: 'LIXIL', dividend: 90, targetYield: 4.0 }
     ];
+    const usStocks = [
+      { name: 'VYM', dividend: 200, targetYield: 4.0 },
+      { name: 'SPYD', dividend: 220, targetYield: 4.0 },
+      { name: 'SCHD', dividend: 210, targetYield: 4.0 }
+    ];
+    const hdvStock = [ { name: 'HDV', dividend: 250, targetYield: 4.0 } ];
 
     function renderTable(stocks, tbodyId, summaryId, group) {
       const tbody = document.getElementById(tbodyId);
@@ -95,6 +107,8 @@
 
     document.addEventListener('DOMContentLoaded', () => {
       renderTable(japanStocks, 'stock-table-japan', 'summary-japan', 'japan');
+      renderTable(usStocks,    'stock-table-us',    'summary-us',    'us');
+      renderTable(hdvStock,    'stock-table-hdv',   'summary-hdv',   'hdv');
     });
   </script>
 </body>
