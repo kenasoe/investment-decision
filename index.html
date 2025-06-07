@@ -45,6 +45,7 @@
         <th>配当金（円）</th>
         <th>目標利回り（%）</th>
         <th>株価（円）</th>
+        <th>株数</th>
         <th>利回り（%）</th>
         <th>判定</th>
       </tr>
@@ -80,6 +81,7 @@
         <td>${stock.dividend}</td>
         <td>${stock.targetYield}</td>
         <td><input type="number" id="price-${index}" placeholder="株価" style="width:80px;"></td>
+        <td><input type="number" id="qty-${index}" placeholder="株数" style="width:60px;"></td>
         <td id="yield-${index}">-</td>
         <td id="judge-${index}">-</td>
       `;
@@ -88,7 +90,8 @@
 
     document.querySelectorAll('input[type="number"]').forEach((input, index) => {
       input.addEventListener('input', () => {
-        const price = parseFloat(input.value);
+        const priceInput = document.getElementById(`price-${index}`);
+        const price = parseFloat(priceInput.value);
         const dividend = stocks[index].dividend;
         const target = stocks[index].targetYield;
 
