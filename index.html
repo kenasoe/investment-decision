@@ -100,10 +100,12 @@
   const diff = totalDividend - targetTotal;
   const diffText = diff >= 0 ? `+${diff.toLocaleString()}` : diff.toLocaleString();
 
-  summary.textContent =
-    `合計配当金: ${totalDividend.toLocaleString()} 円 / 合計株数: ${totalShares.toLocaleString()} 株 / ` +
-    `目標: ${targetTotal} 円 / 差額: ${diffText} 円`;
-}
+ summary.innerHTML =
+  `合計配当金: ${totalDividend.toLocaleString()} 円<br>` +
+  `合計株数: ${totalShares.toLocaleString()} 株<br>` +
+  `目標: ${targetTotal.toLocaleString()} 円<br>` +
+  `差額: ${diffText} 円`;
+
 
 
     function resetQuantities() {
