@@ -35,4 +35,117 @@
 
   <h2>米国高配当株 (VYM, SPYD, SCHD)</h2>
   <div id="summary-us">合計配当金: 0 円 / 合計株数: 0 株</div>
-  <button onclick="resetQ
+  <button onclick="resetQuantities('us')">株数リセット</button>
+  <table>
+    <thead>
+      <tr>
+        <th>銘柄名</th><th>配当金（円）</th><th>目標利回り（%）</th>
+        <th>株価（円）</th><th>株数</th><th>利回り（%）</th><th>判定</th>
+      </tr>
+    </thead>
+    <tbody id="stock-table-us"></tbody>
+  </table>
+
+  <h2>HDV</h2>
+  <div id="summary-hdv">合計配当金: 0 円 / 合計株数: 0 株</div>
+  <button onclick="resetQuantities('hdv')">株数リセット</button>
+  <table>
+    <thead>
+      <tr>
+        <th>銘柄名</th><th>配当金（円）</th><th>目標利回り（%）</th>
+        <th>株価（円）</th><th>株数</th><th>利回り（%）</th><th>判定</th>
+      </tr>
+    </thead>
+    <tbody id="stock-table-hdv"></tbody>
+  </table>
+
+  <script>
+    const japanStocks = [
+      { name: 'JT', dividend: 194, targetYield: 4.0 },
+      { name: 'ENEOS', dividend: 30, targetYield: 4.0 },
+      { name: 'NTT', dividend: 5.3, targetYield: 4.0 },
+      { name: 'INPEX', dividend: 90, targetYield: 4.0 },
+      { name: '大和ハウス', dividend: 165, targetYield: 4.0 },
+      { name: '積水ハウス', dividend: 144, targetYield: 4.0 },
+      { name: '電通', dividend: 139.5, targetYield: 4.0 },
+      { name: 'トヨタ', dividend: 95, targetYield: 4.0 },
+      { name: '東京海上', dividend: 172, targetYield: 4.0 },
+      { name: '野村HD', dividend: 57, targetYield: 4.0 },
+      { name: 'アサヒ', dividend: 52, targetYield: 4.0 },
+      { name: '王子HD', dividend: 36, targetYield: 4.0 },
+      { name: 'LIXIL', dividend: 90, targetYield: 4.0 }
+    ];
+
+    const usStocks = [
+      { name: 'VYM', dividend: 200, targetYield: 4.0 },
+      { name: 'SPYD', dividend: 220, targetYield: 4.0 },
+      { name: 'SCHD', dividend: 210, targetYield: 4.0 }
+    ];
+
+    const hdvStocks = [
+      { name: 'HDV', dividend: 230, targetYield: 4.0 }
+    ];
+
+    function renderTable(stockList, tableId, summaryId) {
+      const table = document.getElementById(tableId);
+      table.innerHTML = '';
+      let totalDividend = 0;
+      let totalQuantity = 0;
+
+      stockList.forEach((stock, index) => {
+        stock.price = stock.dividend / (stock.targetYield / 100); // 仮の株価
+        stock.quantity = stock.quantity || 0;
+        const yieldCalc = stock.price ? (stock.dividend / stock.price * 100).toFixed(2) : 0;
+        const isOk = yieldCalc >= stock.targetYield;
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${stock.name}</td>
+          <td>${stock.dividend}</td>
+          <td>${stock.targetYield}</td>
+          <td>${stock.price.toFixed(1)}</td>
+          <td><input type="number" min="0" value="${stock.quantity}" onchange="updateQuantity('${tableId}', '${summaryId}', ${index}, this.value)"></td>
+          <td>${yieldCalc}</td>
+          <td class="${isOk ? 'ok' : 'ng'}">${isOk ? 'OK' : 'NG'}</td>
+        `;
+        table.appendChild(tr);
+        totalDividend += stock.dividend * stock.quantity;
+        totalQuantity += stock.quantity;
+      });
+
+      document.getElementById(summaryId).innerText = `合計配当金: ${totalDividend.toFixed(0)} 円 / 合計株数: ${totalQuantity} 株`;
+      updateTotalSummary();
+    }
+
+    function updateQuantity(tableId, summaryId, index, value) {
+      const list = tableId === 'stock-table-japan' ? japanStocks :
+                   tableId === 'stock-table-us' ? usStocks : hdvStocks;
+      list[index].quantity = parseInt(value) || 0;
+      renderTable(list, tableId, summaryId);
+    }
+
+    function resetQuantities(type) {
+      const list = type === 'japan' ? japanStocks :
+                   type === 'us' ? usStocks : hdvStocks;
+      list.forEach(stock => stock.quantity = 0);
+      const tableId = type === 'japan' ? 'stock-table-japan' :
+                      type === 'us' ? 'stock-table-us' : 'stock-table-hdv';
+      const summaryId = type === 'japan' ? 'summary-japan' :
+                        type === 'us' ? 'summary-us' : 'summary-hdv';
+      renderTable(list, tableId, summaryId);
+    }
+
+    function updateTotalSummary() {
+      const allStocks = [...japanStocks, ...usStocks, ...hdvStocks];
+      const totalDividend = allStocks.reduce((sum, s) => sum + s.dividend * (s.quantity || 0), 0);
+      const totalQuantity = allStocks.reduce((sum, s) => sum + (s.quantity || 0), 0);
+      document.getElementById('summary-all').innerText =
+        `全体合計 配当金: ${totalDividend.toFixed(0)} 円 / 合計株数: ${totalQuantity} 株`;
+    }
+
+    // 初期表示
+    renderTable(japanStocks, 'stock-table-japan', 'summary-japan');
+    renderTable(usStocks, 'stock-table-us', 'summary-us');
+    renderTable(hdvStocks, 'stock-table-hdv', 'summary-hdv');
+  </script>
+</body>
+</html>
