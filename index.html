@@ -34,7 +34,7 @@
       color: red;
       font-weight: bold;
     }
-    #summary-japan, #summary-us4 {
+    #summary-japan, #summary-us-dividend, #summary-hdv {
       font-size: 1.2em;
       margin-bottom: 20px;
     }
@@ -61,9 +61,9 @@
     <tbody id="stock-table-japan"></tbody>
   </table>
 
-  <h2>米国高配当株 (VYM, SPYD, SCHD, HDV)</h2>
-  <div id="summary-us4">合計配当金: 0 円 / 合計株数: 0 株</div>
-  <button onclick="resetQuantities('us4')">株数リセット</button>
+  <h2>米国高配当株 (VYM, SPYD, SCHD)</h2>
+  <div id="summary-us-dividend">合計配当金: 0 円 / 合計株数: 0 株</div>
+  <button onclick="resetQuantities('us-dividend')">株数リセット</button>
   <table>
     <thead>
       <tr>
@@ -76,7 +76,25 @@
         <th>判定</th>
       </tr>
     </thead>
-    <tbody id="stock-table-us4"></tbody>
+    <tbody id="stock-table-us-dividend"></tbody>
+  </table>
+
+  <h2>HDV</h2>
+  <div id="summary-hdv">合計配当金: 0 円 / 合計株数: 0 株</div>
+  <button onclick="resetQuantities('hdv')">株数リセット</button>
+  <table>
+    <thead>
+      <tr>
+        <th>銘柄名</th>
+        <th>配当金（円）</th>
+        <th>目標利回り（%）</th>
+        <th>株価（円）</th>
+        <th>株数</th>
+        <th>利回り（%）</th>
+        <th>判定</th>
+      </tr>
+    </thead>
+    <tbody id="stock-table-hdv"></tbody>
   </table>
 
   <script>
@@ -96,10 +114,13 @@
       { name: 'LIXIL', dividend: 90, targetYield: 4.0 }
     ];
 
-    const usStocks4 = [
+    const usDividendStocks = [
       { name: 'VYM', dividend: 200, targetYield: 4.0 },
       { name: 'SPYD', dividend: 220, targetYield: 4.0 },
-      { name: 'SCHD', dividend: 210, targetYield: 4.0 },
+      { name: 'SCHD', dividend: 210, targetYield: 4.0 }
+    ];
+
+    const hdvStock = [
       { name: 'HDV', dividend: 250, targetYield: 4.0 }
     ];
 
@@ -159,19 +180,18 @@
             judgeTd.textContent = '-';
             judgeTd.className = '';
           }
-          updateSummary(group);
+          updateSummary(group, stocks, summaryId);
         });
 
         qtyInput.addEventListener('input', () => {
-          updateSummary(group);
+          updateSummary(group, stocks, summaryId);
         });
       });
 
-      updateSummary(group);
+      updateSummary(group, stocks, summaryId);
     }
 
-    function updateSummary(group) {
-      const stocks = group === 'japan' ? japanStocks : usStocks4;
+    function updateSummary(group, stocks, summaryId) {
       let totalDividend = 0;
       let totalShares = 0;
       const targetTotal = 410;
@@ -188,7 +208,6 @@
 
       const diff = totalDividend - targetTotal;
       const diffText = diff >= 0 ? `+${diff.toLocaleString()}` : diff.toLocaleString();
-      const summaryId = group === 'japan' ? "summary-japan" : "summary-us4";
       const summary = document.getElementById(summaryId);
 
       summary.innerHTML =
@@ -199,16 +218,23 @@
     }
 
     function resetQuantities(group) {
-      const stocks = group === 'japan' ? japanStocks : usStocks4;
+      const stocksMap = {
+        japan: japanStocks,
+        'us-dividend': usDividendStocks,
+        hdv: hdvStock
+      };
+      const stocks = stocksMap[group];
       stocks.forEach((_, index) => {
         const qtyInput = document.getElementById(`qty-${group}-${index}`);
         if (qtyInput) qtyInput.value = '';
       });
-      updateSummary(group);
+      const summaryId = `summary-${group}`;
+      updateSummary(group, stocks, summaryId);
     }
 
     renderTable(japanStocks, "stock-table-japan", "summary-japan", "japan");
-    renderTable(usStocks4, "stock-table-us4", "summary-us4", "us4");
+    renderTable(usDividendStocks, "stock-table-us-dividend", "summary-us-dividend", "us-dividend");
+    renderTable(hdvStock, "stock-table-hdv", "summary-hdv", "hdv");
   </script>
 </body>
 </html>
