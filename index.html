@@ -54,14 +54,21 @@
   </table>
 
   <script>
-    // あらかじめ登録された30銘柄（例示）
+    // 銘柄リスト（配当金と目標利回りは仮の値）
     const stocks = [
-      { name: 'トヨタ自動車', dividend: 120, targetYield: 3.5 },
-      { name: 'NTT', dividend: 100, targetYield: 4.0 },
-      { name: '三菱商事', dividend: 150, targetYield: 4.5 },
-      { name: 'KDDI', dividend: 130, targetYield: 3.8 },
-      { name: '伊藤忠商事', dividend: 125, targetYield: 4.2 },
-      // 以下、仮のデータで30銘柄まで増やせます
+      { name: 'JT', dividend: 188, targetYield: 4.0 },
+      { name: 'ENEOS', dividend: 22, targetYield: 4.0 },
+      { name: 'NTT', dividend: 120, targetYield: 3.5 },
+      { name: 'INPEX', dividend: 70, targetYield: 4.5 },
+      { name: '大和ハウス', dividend: 120, targetYield: 4.0 },
+      { name: '積水ハウス', dividend: 110, targetYield: 3.8 },
+      { name: '電通', dividend: 100, targetYield: 3.5 },
+      { name: 'トヨタ', dividend: 120, targetYield: 3.5 },
+      { name: '東京海上', dividend: 250, targetYield: 3.8 },
+      { name: '野村HD', dividend: 25, targetYield: 3.5 },
+      { name: 'アサヒ', dividend: 110, targetYield: 2.5 },
+      { name: '王子HD', dividend: 40, targetYield: 4.0 },
+      { name: 'LIXIL', dividend: 80, targetYield: 3.5 },
     ];
 
     const tbody = document.getElementById("stock-table");
@@ -79,7 +86,6 @@
       tbody.appendChild(tr);
     });
 
-    // イベント設定（自動計算）
     document.querySelectorAll('input[type="number"]').forEach((input, index) => {
       input.addEventListener('input', () => {
         const price = parseFloat(input.value);
@@ -103,3 +109,4 @@
   </script>
 </body>
 </html>
+
