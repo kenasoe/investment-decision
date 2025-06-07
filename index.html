@@ -42,7 +42,7 @@
     <thead>
       <tr>
         <th>銘柄名</th><th>配当金（円）</th><th>基準価格（円）</th>
-        <th>株価（円）</th><th>株数</th><th>利回り（%）</th>
+        <th>利回り（%）</th><th>株価（円）</th><th>株数</th>
       </tr>
     </thead>
     <tbody id="stock-table-us"></tbody>
@@ -100,21 +100,33 @@
         const isOk = stock.targetYield !== undefined ? yieldCalc >= stock.targetYield : null;
 
         const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td>${stock.name}</td>
-          <td>${stock.dividend}</td>
-          ${stock.targetYield !== undefined ? `<td>${stock.targetYield}</td>` : ''}
-          ${stock.basePrice !== undefined ? `
+
+        if (tableId === 'stock-table-us') {
+          tr.innerHTML = `
+            <td>${stock.name}</td>
+            <td>${stock.dividend}</td>
             <td><input type="number" min="0" value="${stock.basePrice}"
               onchange="updateBasePrice('${tableId}', '${summaryId}', ${index}, this.value)"></td>
-          ` : ''}
-          <td><input type="number" min="1" value="${stock.price.toFixed(1)}"
-            onchange="updatePrice('${tableId}', '${summaryId}', ${index}, this.value)"></td>
-          <td><input type="number" min="0" value="${stock.quantity}"
-            onchange="updateQuantity('${tableId}', '${summaryId}', ${index}, this.value)"></td>
-          <td>${yieldCalc}</td>
-          ${stock.targetYield !== undefined ? `<td class="${isOk ? 'ok' : 'ng'}">${isOk ? 'OK' : 'NG'}</td>` : ''}
-        `;
+            <td>${yieldCalc}</td>
+            <td><input type="number" min="1" value="${stock.price.toFixed(1)}"
+              onchange="updatePrice('${tableId}', '${summaryId}', ${index}, this.value)"></td>
+            <td><input type="number" min="0" value="${stock.quantity}"
+              onchange="updateQuantity('${tableId}', '${summaryId}', ${index}, this.value)"></td>
+          `;
+        } else {
+          tr.innerHTML = `
+            <td>${stock.name}</td>
+            <td>${stock.dividend}</td>
+            <td>${stock.targetYield}</td>
+            <td><input type="number" min="1" value="${stock.price.toFixed(1)}"
+              onchange="updatePrice('${tableId}', '${summaryId}', ${index}, this.value)"></td>
+            <td><input type="number" min="0" value="${stock.quantity}"
+              onchange="updateQuantity('${tableId}', '${summaryId}', ${index}, this.value)"></td>
+            <td>${yieldCalc}</td>
+            <td class="${isOk ? 'ok' : 'ng'}">${isOk ? 'OK' : 'NG'}</td>
+          `;
+        }
+
         table.appendChild(tr);
         totalDividend += stock.dividend * stock.quantity;
         totalQuantity += stock.quantity;
