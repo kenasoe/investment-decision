@@ -86,7 +86,9 @@
       let totalDividend = 0;
       let totalShares = 0;
       stocks.forEach((stock, index) => {
-        const qty = parseInt(document.getElementById(`qty-${index}`).value);
+        const qtyInput = document.getElementById(`qty-${index}`);
+        if (!qtyInput) return;
+        const qty = parseInt(qtyInput.value);
         if (!isNaN(qty)) {
           totalShares += qty;
           totalDividend += qty * stock.dividend;
@@ -97,7 +99,8 @@
 
     function resetQuantities() {
       stocks.forEach((_, index) => {
-        document.getElementById(`qty-${index}`).value = '';
+        const qtyInput = document.getElementById(`qty-${index}`);
+        if (qtyInput) qtyInput.value = '';
       });
       updateSummary();
     }
@@ -115,31 +118,33 @@
       `;
       tbody.appendChild(tr);
 
-      const priceInput = document.getElementById(`price-${index}`);
-      const qtyInput = document.getElementById(`qty-${index}`);
+      setTimeout(() => {
+        const priceInput = document.getElementById(`price-${index}`);
+        const qtyInput = document.getElementById(`qty-${index}`);
 
-      function updateRow() {
-        const price = parseFloat(priceInput.value);
-        const dividend = stock.dividend;
-        const target = stock.targetYield;
+        function updateRow() {
+          const price = parseFloat(priceInput.value);
+          const dividend = stock.dividend;
+          const target = stock.targetYield;
 
-        if (!isNaN(price) && price > 0) {
-          const yieldValue = (dividend / price * 100).toFixed(2);
-          document.getElementById(`yield-${index}`).innerText = yieldValue;
-          document.getElementById(`judge-${index}`).innerText =
-            yieldValue >= target ? 'OK' : '✕';
-          document.getElementById(`judge-${index}`).className =
-            yieldValue >= target ? 'ok' : 'ng';
-        } else {
-          document.getElementById(`yield-${index}`).innerText = '-';
-          document.getElementById(`judge-${index}`).innerText = '-';
-          document.getElementById(`judge-${index}`).className = '';
+          if (!isNaN(price) && price > 0) {
+            const yieldValue = (dividend / price * 100).toFixed(2);
+            document.getElementById(`yield-${index}`).innerText = yieldValue;
+            document.getElementById(`judge-${index}`).innerText =
+              yieldValue >= target ? 'OK' : '✕';
+            document.getElementById(`judge-${index}`).className =
+              yieldValue >= target ? 'ok' : 'ng';
+          } else {
+            document.getElementById(`yield-${index}`).innerText = '-';
+            document.getElementById(`judge-${index}`).innerText = '-';
+            document.getElementById(`judge-${index}`).className = '';
+          }
+          updateSummary();
         }
-        updateSummary();
-      }
 
-      priceInput.addEventListener('input', updateRow);
-      qtyInput.addEventListener('input', updateSummary);
+        priceInput.addEventListener('input', updateRow);
+        qtyInput.addEventListener('input', updateSummary);
+      }, 0);
     });
   </script>
 </body>
