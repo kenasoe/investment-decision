@@ -34,7 +34,7 @@
       color: red;
       font-weight: bold;
     }
-    #summary-japan, #summary-us {
+    #summary-japan, #summary-us4 {
       font-size: 1.2em;
       margin-bottom: 20px;
     }
@@ -61,9 +61,9 @@
     <tbody id="stock-table-japan"></tbody>
   </table>
 
-  <h2>米国株</h2>
-  <div id="summary-us">合計配当金: 0 円 / 合計株数: 0 株</div>
-  <button onclick="resetQuantities('us')">株数リセット</button>
+  <h2>米国高配当株 (VYM, SPYD, SCHD, HDV)</h2>
+  <div id="summary-us4">合計配当金: 0 円 / 合計株数: 0 株</div>
+  <button onclick="resetQuantities('us4')">株数リセット</button>
   <table>
     <thead>
       <tr>
@@ -76,7 +76,7 @@
         <th>判定</th>
       </tr>
     </thead>
-    <tbody id="stock-table-us"></tbody>
+    <tbody id="stock-table-us4"></tbody>
   </table>
 
   <script>
@@ -96,11 +96,11 @@
       { name: 'LIXIL', dividend: 90, targetYield: 4.0 }
     ];
 
-    const usStocks = [
+    const usStocks4 = [
       { name: 'VYM', dividend: 200, targetYield: 4.0 },
       { name: 'SPYD', dividend: 220, targetYield: 4.0 },
       { name: 'SCHD', dividend: 210, targetYield: 4.0 },
-      { name: 'HDV（2013）', dividend: 250, targetYield: 4.0 }
+      { name: 'HDV', dividend: 250, targetYield: 4.0 }
     ];
 
     function renderTable(stocks, tbodyId, summaryId, group) {
@@ -171,7 +171,7 @@
     }
 
     function updateSummary(group) {
-      const stocks = group === 'japan' ? japanStocks : usStocks;
+      const stocks = group === 'japan' ? japanStocks : usStocks4;
       let totalDividend = 0;
       let totalShares = 0;
       const targetTotal = 410;
@@ -188,7 +188,7 @@
 
       const diff = totalDividend - targetTotal;
       const diffText = diff >= 0 ? `+${diff.toLocaleString()}` : diff.toLocaleString();
-      const summaryId = group === 'japan' ? "summary-japan" : "summary-us";
+      const summaryId = group === 'japan' ? "summary-japan" : "summary-us4";
       const summary = document.getElementById(summaryId);
 
       summary.innerHTML =
@@ -199,7 +199,7 @@
     }
 
     function resetQuantities(group) {
-      const stocks = group === 'japan' ? japanStocks : usStocks;
+      const stocks = group === 'japan' ? japanStocks : usStocks4;
       stocks.forEach((_, index) => {
         const qtyInput = document.getElementById(`qty-${group}-${index}`);
         if (qtyInput) qtyInput.value = '';
@@ -208,7 +208,7 @@
     }
 
     renderTable(japanStocks, "stock-table-japan", "summary-japan", "japan");
-    renderTable(usStocks, "stock-table-us", "summary-us", "us");
+    renderTable(usStocks4, "stock-table-us4", "summary-us4", "us4");
   </script>
 </body>
 </html>
