@@ -93,17 +93,25 @@
       let totalQuantity = 0;
 
       stockList.forEach((stock, index) => {
-        stock.price = stock.dividend / (stock.targetYield / 100); // 仮の株価
+        stock.price = stock.price || (stock.dividend / (stock.targetYield / 100));
         stock.quantity = stock.quantity || 0;
+
         const yieldCalc = stock.price ? (stock.dividend / stock.price * 100).toFixed(2) : 0;
         const isOk = yieldCalc >= stock.targetYield;
+
         const tr = document.createElement('tr');
         tr.innerHTML = `
           <td>${stock.name}</td>
           <td>${stock.dividend}</td>
           <td>${stock.targetYield}</td>
-          <td>${stock.price.toFixed(1)}</td>
-          <td><input type="number" min="0" value="${stock.quantity}" onchange="updateQuantity('${tableId}', '${summaryId}', ${index}, this.value)"></td>
+          <td>
+            <input type="number" min="1" value="${stock.price.toFixed(1)}"
+              onchange="updatePrice('${tableId}', '${summaryId}', ${index}, this.value)">
+          </td>
+          <td>
+            <input type="number" min="0" value="${stock.quantity}"
+              onchange="updateQuantity('${tableId}', '${summaryId}', ${index}, this.value)">
+          </td>
           <td>${yieldCalc}</td>
           <td class="${isOk ? 'ok' : 'ng'}">${isOk ? 'OK' : 'NG'}</td>
         `;
@@ -112,14 +120,20 @@
         totalQuantity += stock.quantity;
       });
 
-      document.getElementById(summaryId).innerText = `合計配当金: ${totalDividend.toFixed(0)} 円 / 合計株数: ${totalQuantity} 株`;
+      document.getElementById(summaryId).innerText =
+        `合計配当金: ${totalDividend.toFixed(0)} 円 / 合計株数: ${totalQuantity} 株`;
       updateTotalSummary();
     }
 
     function updateQuantity(tableId, summaryId, index, value) {
-      const list = tableId === 'stock-table-japan' ? japanStocks :
-                   tableId === 'stock-table-us' ? usStocks : hdvStocks;
+      const list = getListById(tableId);
       list[index].quantity = parseInt(value) || 0;
+      renderTable(list, tableId, summaryId);
+    }
+
+    function updatePrice(tableId, summaryId, index, value) {
+      const list = getListById(tableId);
+      list[index].price = parseFloat(value) || 0;
       renderTable(list, tableId, summaryId);
     }
 
@@ -140,6 +154,11 @@
       const totalQuantity = allStocks.reduce((sum, s) => sum + (s.quantity || 0), 0);
       document.getElementById('summary-all').innerText =
         `全体合計 配当金: ${totalDividend.toFixed(0)} 円 / 合計株数: ${totalQuantity} 株`;
+    }
+
+    function getListById(tableId) {
+      return tableId === 'stock-table-japan' ? japanStocks :
+             tableId === 'stock-table-us' ? usStocks : hdvStocks;
     }
 
     // 初期表示
