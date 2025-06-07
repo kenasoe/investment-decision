@@ -82,20 +82,29 @@
     const tbody = document.getElementById("stock-table");
     const summary = document.getElementById("summary");
 
-    function updateSummary() {
-      let totalDividend = 0;
-      let totalShares = 0;
-      stocks.forEach((stock, index) => {
-        const qtyInput = document.getElementById(`qty-${index}`);
-        if (!qtyInput) return;
-        const qty = parseInt(qtyInput.value);
-        if (!isNaN(qty)) {
-          totalShares += qty;
-          totalDividend += qty * stock.dividend;
-        }
-      });
-      summary.textContent = `合計配当金: ${totalDividend.toLocaleString()} 円 / 合計株数: ${totalShares.toLocaleString()} 株`;
+  function updateSummary() {
+  let totalDividend = 0;
+  let totalShares = 0;
+  const targetTotal = 410;
+
+  stocks.forEach((stock, index) => {
+    const qtyInput = document.getElementById(`qty-${index}`);
+    if (!qtyInput) return;
+    const qty = parseInt(qtyInput.value);
+    if (!isNaN(qty)) {
+      totalShares += qty;
+      totalDividend += qty * stock.dividend;
     }
+  });
+
+  const diff = totalDividend - targetTotal;
+  const diffText = diff >= 0 ? `+${diff.toLocaleString()}` : diff.toLocaleString();
+
+  summary.textContent =
+    `合計配当金: ${totalDividend.toLocaleString()} 円 / 合計株数: ${totalShares.toLocaleString()} 株 / ` +
+    `目標: ${targetTotal} 円 / 差額: ${diffText} 円`;
+}
+
 
     function resetQuantities() {
       stocks.forEach((_, index) => {
