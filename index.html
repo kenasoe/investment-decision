@@ -10,9 +10,7 @@
       padding: 20px;
       background-color: #f9f9f9;
     }
-    h1 {
-      text-align: center;
-    }
+    h1 { text-align: center; }
     table {
       width: 100%;
       border-collapse: collapse;
@@ -23,17 +21,9 @@
       padding: 8px;
       text-align: center;
     }
-    th {
-      background-color: #eee;
-    }
-    .ok {
-      color: green;
-      font-weight: bold;
-    }
-    .ng {
-      color: red;
-      font-weight: bold;
-    }
+    th { background-color: #eee; }
+    .ok { color: green; font-weight: bold; }
+    .ng { color: red; font-weight: bold; }
     #summary-japan, #summary-us, #summary-hdv {
       font-size: 1.2em;
       margin-bottom: 20px;
@@ -61,66 +51,28 @@
     <tbody id="stock-table-japan"></tbody>
   </table>
 
-  <h2>米国高配当株 (VYM, SPYD, SCHD)</h2>
-  <div id="summary-us">合計配当金: 0 円 / 合計株数: 0 株</div>
-  <button onclick="resetQuantities('us')">株数リセット</button>
-  <table>
-    <thead>
-      <tr>
-        <th>銘柄名</th>
-        <th>配当金（円）</th>
-        <th>目標利回り（%）</th>
-        <th>株価（円）</th>
-        <th>株数</th>
-        <th>利回り（%）</th>
-        <th>判定</th>
-      </tr>
-    </thead>
-    <tbody id="stock-table-us"></tbody>
-  </table>
-
-  <h2>HDV</h2>
-  <div id="summary-hdv">合計配当金: 0 円 / 合計株数: 0 株</div>
-  <button onclick="resetQuantities('hdv')">株数リセット</button>
-  <table>
-    <thead>
-      <tr>
-        <th>銘柄名</th>
-        <th>配当金（円）</th>
-        <th>目標利回り（%）</th>
-        <th>株価（円）</th>
-        <th>株数</th>
-        <th>利回り（%）</th>
-        <th>判定</th>
-      </tr>
-    </thead>
-    <tbody id="stock-table-hdv"></tbody>
-  </table>
-
   <script>
     const japanStocks = [
       { name: 'JT', dividend: 194, targetYield: 4.0 },
       { name: 'ENEOS', dividend: 30, targetYield: 4.0 },
-      /* … 他の銘柄も同様 … */
+      { name: 'NTT', dividend: 5.3, targetYield: 4.0 },
+      { name: 'INPEX', dividend: 90, targetYield: 4.0 },
+      { name: '大和ハウス', dividend: 165, targetYield: 4.0 },
+      { name: '積水ハウス', dividend: 144, targetYield: 4.0 },
+      { name: '電通', dividend: 139.5, targetYield: 4.0 },
+      { name: 'トヨタ', dividend: 95, targetYield: 4.0 },
+      { name: '東京海上', dividend: 172, targetYield: 4.0 },
+      { name: '野村HD', dividend: 57, targetYield: 4.0 },
+      { name: 'アサヒ', dividend: 52, targetYield: 4.0 },
+      { name: '王子HD', dividend: 36, targetYield: 4.0 },
       { name: 'LIXIL', dividend: 90, targetYield: 4.0 }
-    ];
-
-    const usStocks = [
-      { name: 'VYM', dividend: 200, targetYield: 4.0 },
-      { name: 'SPYD', dividend: 220, targetYield: 4.0 },
-      { name: 'SCHD', dividend: 210, targetYield: 4.0 }
-    ];
-
-    const hdvStock = [
-      { name: 'HDV', dividend: 250, targetYield: 4.0 }
     ];
 
     function renderTable(stocks, tbodyId, summaryId, group) {
       const tbody = document.getElementById(tbodyId);
-      tbody.innerHTML = '';  // 既存行をクリア
-
+      tbody.innerHTML = '';
       stocks.forEach((stock, index) => {
-        const tr = document.createElement("tr");
+        const tr = document.createElement('tr');
         tr.innerHTML = `
           <td>${stock.name}</td>
           <td>${stock.dividend}</td>
@@ -132,12 +84,10 @@
         `;
         tbody.appendChild(tr);
       });
-
-      // （必要ならここで input イベントを設定して、利回り計算や合計更新を行う）
     }
 
     function resetQuantities(group) {
-      document.querySelectorAll(`[id^="qty-${group}-"]`).forEach(input => input.value = '');
+      document.querySelectorAll(`[id^="qty-${group}-"]`).forEach(i => i.value = '');
       document.querySelectorAll(`[id^="yield-${group}-"]`).forEach(td => td.textContent = '');
       document.querySelectorAll(`[id^="status-${group}-"]`).forEach(td => td.textContent = '');
       document.getElementById(`summary-${group}`).textContent = '合計配当金: 0 円 / 合計株数: 0 株';
@@ -145,8 +95,6 @@
 
     document.addEventListener('DOMContentLoaded', () => {
       renderTable(japanStocks, 'stock-table-japan', 'summary-japan', 'japan');
-      renderTable(usStocks,    'stock-table-us',    'summary-us',    'us');
-      renderTable(hdvStock,    'stock-table-hdv',   'summary-hdv',   'hdv');
     });
   </script>
 </body>
