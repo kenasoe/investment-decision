@@ -36,13 +36,13 @@
   </table>
 
   <h2>米国高配当株 (VYM, SPYD, SCHD)</h2>
-  <div id="summary-us">合計配当金: 0 円 / 合計株数: 0 株</div>
-  <button onclick="resetQuantities('us')">株数リセット</button>
+  <div id="summary-us">※株数入力なし</div>
+  <button onclick="resetQuantities('us')">リセット</button>
   <table>
     <thead>
       <tr>
         <th>銘柄名</th><th>配当金（円）</th><th>基準価格（円）</th>
-        <th>利回り（%）</th><th>投資額（円）</th><th>株数</th>
+        <th>利回り（%）</th><th>投資額（円）</th>
       </tr>
     </thead>
     <tbody id="stock-table-us"></tbody>
@@ -120,8 +120,6 @@
               onchange="updateBasePrice('${tableId}', '${summaryId}', ${index}, this.value)"></td>
             <td>${yieldCalc}</td>
             <td>${investAmount}</td>
-            <td><input type="number" min="0" value="${stock.quantity}"
-              onchange="updateQuantity('${tableId}', '${summaryId}', ${index}, this.value)"></td>
           `;
         } else {
           tr.innerHTML = `
@@ -138,8 +136,10 @@
         }
 
         table.appendChild(tr);
-        totalDividend += stock.dividend * stock.quantity;
-        totalQuantity += stock.quantity;
+        if (stock.quantity) {
+          totalDividend += stock.dividend * stock.quantity;
+          totalQuantity += stock.quantity;
+        }
       });
 
       document.getElementById(summaryId).innerText =
@@ -168,7 +168,9 @@
     function resetQuantities(type) {
       const list = type === 'japan' ? japanStocks :
                    type === 'us' ? usStocks : hdvStocks;
-      list.forEach(stock => stock.quantity = 0);
+      list.forEach(stock => {
+        if ('quantity' in stock) stock.quantity = 0;
+      });
       const tableId = type === 'japan' ? 'stock-table-japan' :
                       type === 'us' ? 'stock-table-us' : 'stock-table-hdv';
       const summaryId = type === 'japan' ? 'summary-japan' :
@@ -177,7 +179,7 @@
     }
 
     function updateTotalSummary() {
-      const allStocks = [...japanStocks, ...usStocks, ...hdvStocks];
+      const allStocks = [...japanStocks, ...hdvStocks];
       const totalDividend = allStocks.reduce((sum, s) => sum + s.dividend * (s.quantity || 0), 0);
       const totalQuantity = allStocks.reduce((sum, s) => sum + (s.quantity || 0), 0);
       document.getElementById('summary-all').innerText =
