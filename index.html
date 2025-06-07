@@ -93,14 +93,14 @@
       { name: '野村HD', dividend: 57, targetYield: 4.0 },
       { name: 'アサヒ', dividend: 52, targetYield: 4.0 },
       { name: '王子HD', dividend: 36, targetYield: 4.0 },
-      { name: 'LIXIL', dividend: 90, targetYield: 4.0 },
-      { name: 'HDV（2013）', dividend: 250, targetYield: 4.0 }
+      { name: 'LIXIL', dividend: 90, targetYield: 4.0 }
     ];
 
     const usStocks = [
       { name: 'VYM', dividend: 200, targetYield: 4.0 },
       { name: 'SPYD', dividend: 220, targetYield: 4.0 },
-      { name: 'SCHD', dividend: 210, targetYield: 4.0 }
+      { name: 'SCHD', dividend: 210, targetYield: 4.0 },
+      { name: 'HDV（2013）', dividend: 250, targetYield: 4.0 }
     ];
 
     function renderTable(stocks, tbodyId, summaryId, group) {
@@ -159,18 +159,19 @@
             judgeTd.textContent = '-';
             judgeTd.className = '';
           }
-          updateSummary(stocks, group, summary);
+          updateSummary(group);
         });
 
         qtyInput.addEventListener('input', () => {
-          updateSummary(stocks, group, summary);
+          updateSummary(group);
         });
       });
 
-      updateSummary(stocks, group, summary);
+      updateSummary(group);
     }
 
-    function updateSummary(stocks, group, summary) {
+    function updateSummary(group) {
+      const stocks = group === 'japan' ? japanStocks : usStocks;
       let totalDividend = 0;
       let totalShares = 0;
       const targetTotal = 410;
@@ -187,6 +188,8 @@
 
       const diff = totalDividend - targetTotal;
       const diffText = diff >= 0 ? `+${diff.toLocaleString()}` : diff.toLocaleString();
+      const summaryId = group === 'japan' ? "summary-japan" : "summary-us";
+      const summary = document.getElementById(summaryId);
 
       summary.innerHTML =
         `合計配当金: ${totalDividend.toLocaleString()} 円<br>` +
@@ -201,9 +204,7 @@
         const qtyInput = document.getElementById(`qty-${group}-${index}`);
         if (qtyInput) qtyInput.value = '';
       });
-      const summaryId = group === 'japan' ? "summary-japan" : "summary-us";
-      const summary = document.getElementById(summaryId);
-      updateSummary(stocks, group, summary);
+      updateSummary(group);
     }
 
     renderTable(japanStocks, "stock-table-japan", "summary-japan", "japan");
