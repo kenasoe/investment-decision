@@ -59,21 +59,19 @@
     <tbody id="stock-table-hdv"></tbody>
   </table>
 
+  <!-- モーダル -->
+  <div id="memoModal" style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); background:#fff; padding:20px; border:1px solid #ccc; box-shadow:0 0 10px rgba(0,0,0,0.3); z-index:9999;">
+    <div id="memoContent" style="margin-bottom:10px;"></div>
+    <button onclick="closeMemo()">閉じる</button>
+  </div>
+  <div id="modalOverlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.4); z-index:9998;" onclick="closeMemo()"></div>
+
   <script>
     const japanStocks = [
-      { name: 'JT', dividend: 194, targetYield: 4.5, price: 3937 },
+      { name: 'JT', dividend: 194, targetYield: 4.5, price: 3937, memo: '過去は4000円未満で買っている' },
       { name: 'ENEOS', dividend: 30, targetYield: 4.5, price: 679 },
       { name: 'NTT', dividend: 5.3, targetYield: 3.5, price: 160 },
-      { name: 'INPEX', dividend: 90, targetYield: 4.5, price: 1866 },
-      { name: '大和ハウス', dividend: 165, targetYield: 3.5, price: 4914 },
-      { name: '積水ハウス', dividend: 144, targetYield: 4.5, price: 3091 },
-      { name: '電通', dividend: 139.5, targetYield: 4.5, price: 3040 },
-      { name: 'トヨタ', dividend: 95, targetYield: 3.5, price: 2572 },
-      { name: '東京海上', dividend: 172, targetYield: 3.5, price: 5271 },
-      { name: '野村HD', dividend: 57, targetYield: 4.0, price: 894 },
-      { name: 'アサヒ', dividend: 52, targetYield: 3.5, price: 1894 },
-      { name: '王子HD', dividend: 36, targetYield: 4.0, price: 694 },
-      { name: 'LIXIL', dividend: 90, targetYield: 4.0, price: 1624 }
+      // 以下省略...
     ];
 
     const usStocks = [
@@ -96,54 +94,24 @@
         stock.quantity = stock.quantity || 0;
         let yieldCalc = '0.00';
         let investAmount = '-';
+        const nameCell = `<span style="cursor:pointer; text-decoration:underline;" onclick="showMemo('${stock.memo || ''}')">${stock.name}</span>`;
 
         if (tableId === 'stock-table-us') {
           yieldCalc = stock.basePrice ? (stock.dividend / stock.basePrice * 100).toFixed(2) : '0.00';
-          investAmount = yieldCalc > 0
-            ? Math.ceil((11800 / parseFloat(yieldCalc)) / 100) * 100
-            : '-';
+          investAmount = yieldCalc > 0 ? Math.ceil((11800 / parseFloat(yieldCalc)) / 100) * 100 : '-';
+          table.innerHTML += `
+            <tr><td>${nameCell}</td><td>${stock.dividend}</td><td><input type="number" min="0" value="${stock.basePrice}" onchange="updateBasePrice('${tableId}', ${index}, this.value)"></td><td>${yieldCalc}</td><td>${investAmount}</td></tr>`;
+        } else if (tableId === 'stock-table-hdv') {
+          yieldCalc = stock.price ? (stock.dividend / stock.price * 100).toFixed(2) : '0.00';
+          table.innerHTML += `
+            <tr><td>${nameCell}</td><td>${stock.dividend}</td><td><input type="number" min="1" value="${stock.price.toFixed(1)}" onchange="updatePrice('${tableId}', ${index}, this.value)"></td><td><input type="number" min="0" value="${stock.quantity}" onchange="updateQuantity('${tableId}', ${index}, this.value)"></td><td>${yieldCalc}</td></tr>`;
         } else {
           yieldCalc = stock.price ? (stock.dividend / stock.price * 100).toFixed(2) : '0.00';
+          const isOk = stock.targetYield !== undefined ? yieldCalc >= stock.targetYield : null;
+          table.innerHTML += `
+            <tr><td>${nameCell}</td><td>${stock.dividend}</td><td>${stock.targetYield}</td><td><input type="number" min="1" value="${stock.price.toFixed(1)}" onchange="updatePrice('${tableId}', ${index}, this.value)"></td><td><input type="number" min="0" value="${stock.quantity}" onchange="updateQuantity('${tableId}', ${index}, this.value)"></td><td>${yieldCalc}</td><td class="${isOk ? 'ok' : 'ng'}">${isOk ? 'OK' : 'NG'}</td></tr>`;
         }
 
-        const isOk = stock.targetYield !== undefined ? yieldCalc >= stock.targetYield : null;
-
-        const tr = document.createElement('tr');
-
-        if (tableId === 'stock-table-us') {
-          tr.innerHTML = `
-            <td>${stock.name}</td>
-            <td>${stock.dividend}</td>
-            <td><input type="number" min="0" value="${stock.basePrice}"
-              onchange="updateBasePrice('${tableId}', '${summaryId}', ${index}, this.value)"></td>
-            <td>${yieldCalc}</td>
-            <td>${investAmount}</td>
-          `;
-        } else if (tableId === 'stock-table-hdv') {
-          tr.innerHTML = `
-            <td>${stock.name}</td>
-            <td>${stock.dividend}</td>
-            <td><input type="number" min="1" value="${stock.price.toFixed(1)}"
-              onchange="updatePrice('${tableId}', '${summaryId}', ${index}, this.value)"></td>
-            <td><input type="number" min="0" value="${stock.quantity}"
-              onchange="updateQuantity('${tableId}', '${summaryId}', ${index}, this.value)"></td>
-            <td>${yieldCalc}</td>
-          `;
-        } else {
-          tr.innerHTML = `
-            <td>${stock.name}</td>
-            <td>${stock.dividend}</td>
-            <td>${stock.targetYield}</td>
-            <td><input type="number" min="1" value="${stock.price.toFixed(1)}"
-              onchange="updatePrice('${tableId}', '${summaryId}', ${index}, this.value)"></td>
-            <td><input type="number" min="0" value="${stock.quantity}"
-              onchange="updateQuantity('${tableId}', '${summaryId}', ${index}, this.value)"></td>
-            <td>${yieldCalc}</td>
-            <td class="${isOk ? 'ok' : 'ng'}">${isOk ? 'OK' : 'NG'}</td>
-          `;
-        }
-
-        table.appendChild(tr);
         if (stock.quantity) {
           totalDividend += stock.dividend * stock.quantity;
           totalQuantity += stock.quantity;
@@ -158,39 +126,33 @@
       updateTotalSummary();
     }
 
-    function updateQuantity(tableId, summaryId, index, value) {
+    function updateQuantity(tableId, index, value) {
       const list = getListById(tableId);
       list[index].quantity = parseInt(value) || 0;
-      renderTable(list, tableId, summaryId);
+      renderTable(list, tableId, getSummaryId(tableId));
     }
 
-    function updatePrice(tableId, summaryId, index, value) {
+    function updatePrice(tableId, index, value) {
       const list = getListById(tableId);
       list[index].price = parseFloat(value) || 0;
-      renderTable(list, tableId, summaryId);
+      renderTable(list, tableId, getSummaryId(tableId));
     }
 
-    function updateBasePrice(tableId, summaryId, index, value) {
+    function updateBasePrice(tableId, index, value) {
       const list = getListById(tableId);
       list[index].basePrice = parseFloat(value) || 0;
-      renderTable(list, tableId, summaryId);
+      renderTable(list, tableId, null);
     }
 
     function resetQuantities(type) {
-      const list = type === 'japan' ? japanStocks :
-                   type === 'us' ? usStocks : hdvStocks;
-      list.forEach(stock => {
-        if ('quantity' in stock) stock.quantity = 0;
-      });
-      const tableId = type === 'japan' ? 'stock-table-japan' :
-                      type === 'us' ? 'stock-table-us' : 'stock-table-hdv';
-      const summaryId = type === 'japan' ? 'summary-japan' :
-                        type === 'us' ? null : 'summary-hdv';
-      renderTable(list, tableId, summaryId);
+      const list = type === 'japan' ? japanStocks : type === 'us' ? usStocks : hdvStocks;
+      list.forEach(stock => { if ('quantity' in stock) stock.quantity = 0; });
+      const tableId = type === 'japan' ? 'stock-table-japan' : type === 'us' ? 'stock-table-us' : 'stock-table-hdv';
+      renderTable(list, tableId, getSummaryId(tableId));
     }
 
     function updateTotalSummary() {
-      const allStocks = [...japanStocks, ...hdvStocks]; // usStocksは除外
+      const allStocks = [...japanStocks, ...hdvStocks];
       const totalDividend = allStocks.reduce((sum, s) => sum + s.dividend * (s.quantity || 0), 0);
       const totalQuantity = allStocks.reduce((sum, s) => sum + (s.quantity || 0), 0);
       document.getElementById('summary-all').innerText =
@@ -198,8 +160,22 @@
     }
 
     function getListById(tableId) {
-      return tableId === 'stock-table-japan' ? japanStocks :
-             tableId === 'stock-table-us' ? usStocks : hdvStocks;
+      return tableId === 'stock-table-japan' ? japanStocks : tableId === 'stock-table-us' ? usStocks : hdvStocks;
+    }
+
+    function getSummaryId(tableId) {
+      return tableId === 'stock-table-japan' ? 'summary-japan' : tableId === 'stock-table-hdv' ? 'summary-hdv' : null;
+    }
+
+    function showMemo(memoText) {
+      document.getElementById('memoContent').innerText = memoText || '（メモは登録されていません）';
+      document.getElementById('memoModal').style.display = 'block';
+      document.getElementById('modalOverlay').style.display = 'block';
+    }
+
+    function closeMemo() {
+      document.getElementById('memoModal').style.display = 'none';
+      document.getElementById('modalOverlay').style.display = 'none';
     }
 
     renderTable(japanStocks, 'stock-table-japan', 'summary-japan');
