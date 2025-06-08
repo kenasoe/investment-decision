@@ -53,8 +53,7 @@
   <table>
     <thead>
       <tr>
-        <th>銘柄名</th><th>配当金（円）</th><th>目標利回り（%）</th>
-        <th>株価（円）</th><th>株数</th><th>利回り（%）</th><th>判定</th>
+        <th>銘柄名</th><th>配当金（円）</th><th>株価（円）</th><th>株数</th><th>利回り（%）</th>
       </tr>
     </thead>
     <tbody id="stock-table-hdv"></tbody>
@@ -84,7 +83,7 @@
     ];
 
     const hdvStocks = [
-      { name: 'HDV', dividend: 5.7, targetYield: 4.0, price: 180 }
+      { name: 'HDV', dividend: 5.7, price: 180 }
     ];
 
     function renderTable(stockList, tableId, summaryId) {
@@ -119,6 +118,16 @@
               onchange="updateBasePrice('${tableId}', '${summaryId}', ${index}, this.value)"></td>
             <td>${yieldCalc}</td>
             <td>${investAmount}</td>
+          `;
+        } else if (tableId === 'stock-table-hdv') {
+          tr.innerHTML = `
+            <td>${stock.name}</td>
+            <td>${stock.dividend}</td>
+            <td><input type="number" min="1" value="${stock.price.toFixed(1)}"
+              onchange="updatePrice('${tableId}', '${summaryId}', ${index}, this.value)"></td>
+            <td><input type="number" min="0" value="${stock.quantity}"
+              onchange="updateQuantity('${tableId}', '${summaryId}', ${index}, this.value)"></td>
+            <td>${yieldCalc}</td>
           `;
         } else {
           tr.innerHTML = `
