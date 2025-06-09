@@ -118,6 +118,7 @@
         }
 
         const isOk = stock.targetYield !== undefined ? yieldCalc >= stock.targetYield : null;
+        const nameCell = `<span style="cursor:pointer; text-decoration:underline;" onclick="showMemo('${stock.memo || ''}')">${stock.name}</span>`;
 
         const tr = document.createElement('tr');
         if (tableId === 'stock-table-us') {
