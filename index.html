@@ -59,15 +59,13 @@
     <tbody id="stock-table-hdv"></tbody>
   </table>
 
-<!-- モーダル -->
-  <div id="memoModal" style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%, -50%);
-    background:#fff; padding:20px; border:1px solid #ccc; box-shadow:0 0 10px rgba(0,0,0,0.3); z-index:9999;">
+  <!-- モーダル -->
+  <div id="memoModal" style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); background:#fff; padding:20px; border:1px solid #ccc; box-shadow:0 0 10px rgba(0,0,0,0.3); z-index:9999;">
     <div id="memoContent" style="margin-bottom:10px;"></div>
     <button onclick="closeMemo()">閉じる</button>
   </div>
-  <div id="modalOverlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%;
-    background:rgba(0,0,0,0.4); z-index:9998;" onclick="closeMemo()"></div>
-  
+  <div id="modalOverlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.4); z-index:9998;" onclick="closeMemo()"></div>
+
   <script>
     const japanStocks = [
       { name: 'JT', dividend: 194, targetYield: 4.5, price: 4365, memo: '過去は4000円未満で買っている' },
@@ -86,13 +84,13 @@
     ];
 
     const usStocks = [
-      { name: 'VYM', dividend: 310, basePrice: 11229,memo: '今の高配当銘柄400銘柄' },
-      { name: 'SPYD', dividend: 455, basePrice: 10616,memo: 'SP500から80銘柄　配当中心、リスク高め　増配はせず、目先を優先'  },
-      { name: 'SCHD', dividend: 325, basePrice: 9066,memo: '10年以上の増配企業　100銘柄　配当+成長　年率増配率11.06％'  }
+      { name: 'VYM', dividend: 310, basePrice: 11229, memo: '今の高配当銘柄400銘柄' },
+      { name: 'SPYD', dividend: 455, basePrice: 10616, memo: 'SP500から80銘柄　配当中心、リスク高め　増配はせず、目先を優先' },
+      { name: 'SCHD', dividend: 325, basePrice: 9066, memo: '10年以上の増配企業　100銘柄　配当+成長　年率増配率11.06％' }
     ];
 
     const hdvStocks = [
-      { name: 'HDV', dividend: 5.7, price: 225.7 }
+      { name: 'HDV', dividend: 5.7, price: 225.7, memo: '75銘柄 安全志向' }
     ];
 
     function renderTable(stockList, tableId, summaryId) {
@@ -110,9 +108,7 @@
           yieldCalc = stock.basePrice ? (stock.dividend / stock.basePrice * 100).toFixed(2) : '0.00';
           const yieldValue = stock.basePrice ? stock.dividend / stock.basePrice : 0;
           const base = stock.name === 'SCHD' ? 174 : 87;
-          investAmount = yieldValue > 0
-            ? Math.round((base / yieldValue) / 100) * 100
-            : '-';
+          investAmount = yieldValue > 0 ? Math.round((base / yieldValue) / 100) * 100 : '-';
         } else {
           yieldCalc = stock.price ? (stock.dividend / stock.price * 100).toFixed(2) : '0.00';
         }
@@ -123,7 +119,7 @@
         const tr = document.createElement('tr');
         if (tableId === 'stock-table-us') {
           tr.innerHTML = `
-            <td>${stock.name}</td>
+            <td>${nameCell}</td>
             <td>${stock.dividend}</td>
             <td><input type="number" min="0" value="${stock.basePrice}" onchange="updateBasePrice('${tableId}', '${summaryId}', ${index}, this.value)"></td>
             <td>${yieldCalc}</td>
@@ -131,7 +127,7 @@
           `;
         } else if (tableId === 'stock-table-hdv') {
           tr.innerHTML = `
-            <td>${stock.name}</td>
+            <td>${nameCell}</td>
             <td>${stock.dividend}</td>
             <td><input type="number" min="1" value="${stock.price}" onchange="updatePrice('${tableId}', '${summaryId}', ${index}, this.value)"></td>
             <td><input type="number" min="0" value="${stock.quantity}" onchange="updateQuantity('${tableId}', '${summaryId}', ${index}, this.value)"></td>
@@ -139,7 +135,7 @@
           `;
         } else {
           tr.innerHTML = `
-            <td>${stock.name}</td>
+            <td>${nameCell}</td>
             <td>${stock.dividend}</td>
             <td>${stock.targetYield}</td>
             <td><input type="number" min="1" value="${stock.price}" onchange="updatePrice('${tableId}', '${summaryId}', ${index}, this.value)"></td>
@@ -206,6 +202,17 @@
     function getListById(tableId) {
       return tableId === 'stock-table-japan' ? japanStocks :
              tableId === 'stock-table-us' ? usStocks : hdvStocks;
+    }
+
+    function showMemo(memoText) {
+      document.getElementById('memoContent').innerText = memoText || '（メモは登録されていません）';
+      document.getElementById('memoModal').style.display = 'block';
+      document.getElementById('modalOverlay').style.display = 'block';
+    }
+
+    function closeMemo() {
+      document.getElementById('memoModal').style.display = 'none';
+      document.getElementById('modalOverlay').style.display = 'none';
     }
 
     renderTable(japanStocks, 'stock-table-japan', 'summary-japan');
