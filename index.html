@@ -99,9 +99,10 @@
 
         if (tableId === 'stock-table-us') {
           yieldCalc = stock.basePrice ? (stock.dividend / stock.basePrice * 100).toFixed(2) : '0.00';
+          const yieldValue = parseFloat(yieldCalc);
           const base = stock.name === 'SCHD' ? 174 : 87;
-          investAmount = yieldCalc > 0
-            ? Math.round((base / parseFloat(yieldCalc)) / 100) * 100
+          investAmount = yieldValue > 0
+            ? Math.round((base / yieldValue / 100)) * 100
             : '-';
         } else {
           yieldCalc = stock.price ? (stock.dividend / stock.price * 100).toFixed(2) : '0.00';
