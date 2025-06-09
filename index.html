@@ -59,10 +59,19 @@
     <tbody id="stock-table-hdv"></tbody>
   </table>
 
+<!-- モーダル -->
+  <div id="memoModal" style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%, -50%);
+    background:#fff; padding:20px; border:1px solid #ccc; box-shadow:0 0 10px rgba(0,0,0,0.3); z-index:9999;">
+    <div id="memoContent" style="margin-bottom:10px;"></div>
+    <button onclick="closeMemo()">閉じる</button>
+  </div>
+  <div id="modalOverlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%;
+    background:rgba(0,0,0,0.4); z-index:9998;" onclick="closeMemo()"></div>
+  
   <script>
     const japanStocks = [
-      { name: 'JT', dividend: 194, targetYield: 4.5, price: 4365 },
-      { name: 'ENEOS', dividend: 30, targetYield: 4.5, price: 703.3 },
+      { name: 'JT', dividend: 194, targetYield: 4.5, price: 4365, memo: '過去は4000円未満で買っている' },
+      { name: 'ENEOS', dividend: 30, targetYield: 4.5, price: 703.3, memo: 'ガソリン代の一部に' },
       { name: 'NTT', dividend: 5.3, targetYield: 3.5, price: 158.4 },
       { name: 'INPEX', dividend: 90, targetYield: 4.5, price: 1990.5 },
       { name: '大和ハウス', dividend: 165, targetYield: 3.5, price: 4859 },
@@ -77,9 +86,9 @@
     ];
 
     const usStocks = [
-      { name: 'VYM', dividend: 310, basePrice: 11229 },
-      { name: 'SPYD', dividend: 455, basePrice: 10616 },
-      { name: 'SCHD', dividend: 325, basePrice: 9066 }
+      { name: 'VYM', dividend: 310, basePrice: 11229,memo: '今の高配当銘柄400銘柄' },
+      { name: 'SPYD', dividend: 455, basePrice: 10616,memo: 'SP500から80銘柄　配当中心、リスク高め　増配はせず、目先を優先'  },
+      { name: 'SCHD', dividend: 325, basePrice: 9066,memo: '10年以上の増配企業　100銘柄　配当+成長　年率増配率11.06％'  }
     ];
 
     const hdvStocks = [
