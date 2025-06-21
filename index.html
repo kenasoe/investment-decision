@@ -7,10 +7,9 @@
   <style>
     body { font-family: sans-serif; padding: 20px; background-color: #f9f9f9; }
     h1 { text-align: center; }
-    #summary-all, #summary-japan, #summary-hdv {
+    #summary-japan, #summary-hdv {
       font-size: 1.2em; margin-bottom: 20px;
     }
-    #summary-all { font-weight: bold; text-align: center; }
     table { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
     th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
     th { background-color: #eee; }
@@ -20,7 +19,6 @@
 </head>
 <body>
   <h1>配当利回り</h1>
-  <div id="summary-all">全体合計 配当金: 0 円 / 合計株数: 0 株</div>
 
   <h2>日本株405円</h2>
   <div id="summary-japan">合計配当金: 0 円 / 合計株数: 0 株</div>
@@ -36,7 +34,6 @@
   </table>
 
   <h2>米国高配当株 (VYM, SPYD, SCHD)</h2>
-
   <table>
     <thead>
       <tr>
@@ -59,7 +56,6 @@
     <tbody id="stock-table-hdv"></tbody>
   </table>
 
-  <!-- モーダル -->
   <div id="memoModal" style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); background:#fff; padding:20px; border:1px solid #ccc; box-shadow:0 0 10px rgba(0,0,0,0.3); z-index:9999;">
     <div id="memoContent" style="margin-bottom:10px;"></div>
     <button onclick="closeMemo()">閉じる</button>
@@ -158,8 +154,6 @@
         document.getElementById(summaryId).innerText =
           `合計配当金: ${totalDividend.toFixed(0)} 円 / 合計株数: ${totalQuantity} 株`;
       }
-
-      updateTotalSummary();
     }
 
     function updateQuantity(tableId, summaryId, index, value) {
@@ -193,14 +187,6 @@
       renderTable(list, tableId, summaryId);
     }
 
-    function updateTotalSummary() {
-      const allStocks = [...japanStocks, ...hdvStocks];
-      const totalDividend = allStocks.reduce((sum, s) => sum + s.dividend * (s.quantity || 0), 0);
-      const totalQuantity = allStocks.reduce((sum, s) => sum + (s.quantity || 0), 0);
-      document.getElementById('summary-all').innerText =
-        `全体合計 配当金: ${totalDividend.toFixed(0)} 円 / 合計株数: ${totalQuantity} 株`;
-    }
-
     function getListById(tableId) {
       return tableId === 'stock-table-japan' ? japanStocks :
              tableId === 'stock-table-us' ? usStocks : hdvStocks;
@@ -221,7 +207,8 @@
     renderTable(usStocks, 'stock-table-us', null);
     renderTable(hdvStocks, 'stock-table-hdv', 'summary-hdv');
   </script>
-<div style="text-align:center; margin-top: 40px;">
+
+  <div style="text-align:center; margin-top: 40px;">
     <a href="https://finance.yahoo.co.jp/quote/89311241" target="_blank">VYM</a> |
     <a href="https://finance.yahoo.co.jp/quote/89312241" target="_blank">SPYD</a> |
     <a href="https://finance.yahoo.co.jp/quote/8931224C" target="_blank">SCHD</a>
