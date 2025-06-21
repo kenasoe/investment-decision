@@ -19,8 +19,7 @@
   </style>
 </head>
 <body>
-  <h1>配当利回り</h1>
-  <div id="summary-all">全体合計 配当金: 0 円 / 合計株数: 0 株</div>
+  <h1>配当利回り　@810円</h1>
 
   <h2>日本株405円</h2>
   <div id="summary-japan">合計配当金: 0 円 / 合計株数: 0 株</div>
@@ -191,14 +190,6 @@
       const summaryId = type === 'japan' ? 'summary-japan' :
                         type === 'us' ? null : 'summary-hdv';
       renderTable(list, tableId, summaryId);
-    }
-
-    function updateTotalSummary() {
-      const allStocks = [...japanStocks, ...hdvStocks];
-      const totalDividend = allStocks.reduce((sum, s) => sum + s.dividend * (s.quantity || 0), 0);
-      const totalQuantity = allStocks.reduce((sum, s) => sum + (s.quantity || 0), 0);
-      document.getElementById('summary-all').innerText =
-        `全体合計 配当金: ${totalDividend.toFixed(0)} 円 / 合計株数: ${totalQuantity} 株`;
     }
 
     function getListById(tableId) {
