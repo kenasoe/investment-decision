@@ -27,7 +27,7 @@
     <thead>
       <tr>
         <th>銘柄名</th><th>配当金（円）</th><th>目標利回り（%）</th>
-        <th>株価（円）</th><th>株数</th><th>利回り（%）</th><th>判定</th>
+        <th style="width:7%;">株価（円）</th><th style="width:7%;">株数</th><th>利回り（%）</th><th>判定</th>
       </tr>
     </thead>
     <tbody id="stock-table-japan"></tbody>
@@ -136,8 +136,8 @@
             <td>${nameCell}</td>
             <td>${stock.dividend}</td>
             <td>${stock.targetYield}</td>
-            <td><input type="number" min="1" value="${stock.price}" onchange="updatePrice('${tableId}', '${summaryId}', ${index}, this.value)"></td>
-            <td><input type="number" min="0" value="${stock.quantity}" onchange="updateQuantity('${tableId}', '${summaryId}', ${index}, this.value)"></td>
+            <td style="width:7%;"><input type="number" min="1" value="${stock.price}" onchange="updatePrice('${tableId}', '${summaryId}', ${index}, this.value)"></td>
+            <td style="width:7%;"><input type="number" min="0" value="${stock.quantity}" onchange="updateQuantity('${tableId}', '${summaryId}', ${index}, this.value)"></td>
             <td>${yieldCalc}</td>
             <td class="${isOk ? 'ok' : 'ng'}">${isOk ? 'OK' : 'NG'}</td>
           `;
