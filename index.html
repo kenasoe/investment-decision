@@ -64,31 +64,31 @@
 
   <script>
     const japanStocks = [
-      { name: '王子HD(1.8万)', dividend: 36, targetYield: 4.0, price: 714, memo: '大手製紙では高信用 安定増配×1.1' },
-      { name: '積水ハウス(4.5万)', dividend: 144, targetYield: 4.6, price: 3054, memo: '4.5→4.6へ引上げ 安定増配' },
-      { name: 'JT(60万)', dividend: 194, targetYield: 4.5, price: 4350, memo: '過去は4000円未満で買っている' },
-      { name: '電通(11万)', dividend: 139.5, targetYield: 4.5, price: 3154, memo: '安定増配×1.5' },
-      { name: 'INPEX(11万)', dividend: 90, targetYield: 4.5, price: 2003, memo: '増配×1.9' },
-      { name: 'ENEOS(2.5万)', dividend: 30, targetYield: 4.5, price: 706, memo: '増配×1.2 ガソリン代の一部に' },
-      { name: '三菱商事(68万)', dividend: 110, targetYield: 3.6, price: 2804, memo: '4.0→3.8へ引下げ' },
-      { name: 'トヨタ(29万)', dividend: 95, targetYield: 3.5, price: 2490 },
-      { name: 'NTT(9.4万)', dividend: 5.3, targetYield: 3.5, price: 150.9, memo: '安定増配×1.6' },
-      { name: '大和ハウス(3.9万)', dividend: 165, targetYield: 3.5, price: 4951 },
-      { name: '東京海上(7.6万)', dividend: 172, targetYield: 3.5, price: 5856 },
-      { name: 'アサヒ', dividend: 52, targetYield: 3.5, price: 1968 },
-      { name: '伊藤忠(10万)', dividend: 200, targetYield: 3.5, price: 7420 },
-      { name: '野村HD', dividend: 47, targetYield: 4.0, price: 898 },
-      { name: 'LIXIL', dividend: 90, targetYield: 5.0, price: 1610, memo: '配当は安定、低利益' }
+      { name: '王子HD(8.9万)', dividend: 36, targetYield: 4.0, price: 708, memo: '大手製紙では高信用 安定増配×1.1' },
+      { name: '積水ハウス(4.6万)', dividend: 144, targetYield: 4.6, price: 3104, memo: '4.5→4.6へ引上げ 安定増配' },
+      { name: 'JT(59万)', dividend: 194, targetYield: 4.5, price: 4279, memo: '過去は4000円未満で買っている' },
+      { name: '電通(11万)', dividend: 139.5, targetYield: 4.5, price: 3189, memo: '安定増配×1.5' },
+      { name: 'INPEX(11万)', dividend: 90, targetYield: 4.5, price: 2018, memo: '増配×1.9' },
+      { name: 'ENEOS(2.5万)', dividend: 30, targetYield: 4.5, price: 712, memo: '増配×1.2 ガソリン代の一部に' },
+      { name: '三菱商事(69万)', dividend: 110, targetYield: 3.6, price: 2854, memo: '4.0→3.8へ引下げ' },
+      { name: 'トヨタ(30万)', dividend: 95, targetYield: 3.5, price: 2456 },
+      { name: 'NTT(9.3万)', dividend: 5.3, targetYield: 3.5, price: 149.3, memo: '安定増配×1.6' },
+      { name: '大和ハウス(3.9万)', dividend: 165, targetYield: 3.5, price: 4937 },
+      { name: '東京海上(7.8万)', dividend: 172, targetYield: 3.5, price: 6003 },
+      { name: 'アサヒ', dividend: 52, targetYield: 3.5, price: 1924 },
+      { name: '伊藤忠(10万)', dividend: 200, targetYield: 3.5, price: 7478 },
+      { name: '野村HD', dividend: 47, targetYield: 4.0, price: 903 },
+      { name: 'LIXIL', dividend: 90, targetYield: 5.0, price: 1640, memo: '配当は安定、低利益' }
     ];
 
     const usStocks = [
-      { name: 'VYM', dividend: 310, basePrice: 11349, memo: '今の高配当銘柄400銘柄' },
-      { name: 'SPYD', dividend: 455, basePrice: 10706, memo: 'SP500から80銘柄　配当中心、リスク高め　増配はせず、目先を優先' },
-      { name: 'SCHD', dividend: 306, basePrice: 9158, memo: '10年以上の増配企業　100銘柄　配当+成長　年率増配率11.06％' }
+      { name: 'VYM', dividend: 310, basePrice: 11335, memo: '今の高配当銘柄400銘柄' },
+      { name: 'SPYD', dividend: 455, basePrice: 10551, memo: 'SP500から80銘柄　配当中心、リスク高め　増配はせず、目先を優先' },
+      { name: 'SCHD', dividend: 306, basePrice: 8962, memo: '10年以上の増配企業　100銘柄　配当+成長　年率増配率11.06％' }
     ];
 
     const hdvStocks = [
-      { name: 'HDV', dividend: 5.7, price: 225.7, memo: '75銘柄 安全志向' }
+      { name: 'HDV', dividend: 5.7, price: 226.4, memo: '75銘柄 安全志向' }
     ];
 
     function renderTable(stockList, tableId, summaryId) {
