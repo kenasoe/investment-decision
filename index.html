@@ -121,30 +121,26 @@
         let yieldCalc = '0.00';
         let investAmount = '-';
 
-      if (tableId === 'stock-table-us' || tableId === 'stock-table-reit') {
-  // 利回り（小数）
-  const yieldValue = stock.basePrice ? stock.dividend / stock.basePrice : 0;
+        if (tableId === 'stock-table-us' || tableId === 'stock-table-reit') {
+          yieldCalc = stock.basePrice ? (stock.dividend / stock.basePrice * 100).toFixed(2) : '0.00';
+          const yieldValue = stock.basePrice ? stock.dividend / stock.basePrice : 0;
+          const base = stock.name.includes('SCHD') ? 174 : 87;
+          investAmount = yieldValue > 0 ? Math.round((base / yieldValue) / 100) * 100 : '-';
+        } else {
+          yieldCalc = stock.price ? (stock.dividend / stock.price * 100).toFixed(2) : '0.00';
+        }
 
-  // 投資額算出の基準配当金（円）
-  // ・日本高配当ETF（stock-table-reit）の場合は 200円
-  // ・US 高配当株（SCHD/VYM/SPYD）の場合は従来どおり（例: SCHD→174円、その他→87円）
-  const targetDividend = tableId === 'stock-table-reit'
-    ? 200
-    : (stock.name.includes('SCHD') ? 174 : 87);
+        const isOk = stock.targetYield !== undefined ? yieldCalc >= stock.targetYield : null;
+        const nameCell = `<span style="cursor:pointer; text-decoration:underline;" onclick="showMemo('${stock.memo || ''}')">${stock.name}</span>`;
 
-  // 必要投資額 = targetDividend ÷ yieldValue
-  // 端数は百円単位で四捨五入
-  const investAmount = yieldValue > 0
-    ? Math.round((targetDividend / yieldValue) / 100) * 100
-    : '-';
-
-  tr.innerHTML = `
-    <td>${nameCell}</td>
-    <td>${stock.dividend}</td>
-    <td><input type="number" min="0" value="${stock.basePrice}"
-                onchange="updateBasePrice('${tableId}', null, ${index}, this.value)"></td>
-    <td>${(yieldValue * 100).toFixed(2)}</td>
-    <td>${investAmount}</td>
+        const tr = document.createElement('tr');
+        if (tableId === 'stock-table-us' || tableId === 'stock-table-reit') {
+          tr.innerHTML = `
+            <td>${nameCell}</td>
+            <td>${stock.dividend}</td>
+            <td><input type="number" min="0" value="${stock.basePrice}" onchange="updateBasePrice('${tableId}', null, ${index}, this.value)"></td>
+            <td>${yieldCalc}</td>
+            <td>${investAmount}</td>
           `;
         } else if (tableId === 'stock-table-hdv') {
           tr.innerHTML = `
