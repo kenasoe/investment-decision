@@ -33,6 +33,19 @@
     <tbody id="stock-table-japan"></tbody>
   </table>
 
+  <!-- ▼ 新しく追加するREIT表 -->
+  <h2>米国リート（REIT）</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>銘柄名</th><th>配当金（円）</th><th>基準価格（円）</th>
+        <th>利回り（%）</th><th>投資額（円）</th>
+      </tr>
+    </thead>
+    <tbody id="stock-table-reit"></tbody>
+  </table>
+  <!-- ▲ ここまでが追加部分 -->
+
   <h2>米国高配当株 (VYM, SPYD, SCHD)</h2>
   <table>
     <thead>
@@ -62,7 +75,7 @@
   </div>
   <div id="modalOverlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.4); z-index:9998;" onclick="closeMemo()"></div>
 
-  <script>
+   <script>
     const japanStocks = [
       { name: '王子HD(8.9万)', dividend: 36, targetYield: 4.0, price: 728, memo: '大手製紙では高信用 安定増配×1.1 JCR:AA- R&I:A+' },
       { name: 'JT(59万)', dividend: 194, targetYield: 4.5, price: 4252, memo: '過去は4000円未満で買っている JCR:AA+ R&I:AA' },
@@ -91,6 +104,12 @@
       { name: 'HDV', dividend: 5.7, price: 227.7, memo: '75銘柄 安全志向' }
     ];
 
+    // ▼ 追加：REIT銘柄
+    const reitStocks = [
+      { name: 'iシェアーズ米国リートETF', dividend: 420, basePrice: 10900, memo: '米国REIT広範囲に分散' },
+      { name: 'バンガード米国リートETF', dividend: 400, basePrice: 10250, memo: '分配金成長を重視' }
+    ];
+
     function renderTable(stockList, tableId, summaryId) {
       const table = document.getElementById(tableId);
       table.innerHTML = '';
@@ -102,10 +121,10 @@
         let yieldCalc = '0.00';
         let investAmount = '-';
 
-        if (tableId === 'stock-table-us') {
+        if (tableId === 'stock-table-us' || tableId === 'stock-table-reit') {
           yieldCalc = stock.basePrice ? (stock.dividend / stock.basePrice * 100).toFixed(2) : '0.00';
           const yieldValue = stock.basePrice ? stock.dividend / stock.basePrice : 0;
-          const base = stock.name === 'SCHD' ? 174 : 87;
+          const base = stock.name.includes('SCHD') ? 174 : 87;
           investAmount = yieldValue > 0 ? Math.round((base / yieldValue) / 100) * 100 : '-';
         } else {
           yieldCalc = stock.price ? (stock.dividend / stock.price * 100).toFixed(2) : '0.00';
@@ -115,11 +134,11 @@
         const nameCell = `<span style="cursor:pointer; text-decoration:underline;" onclick="showMemo('${stock.memo || ''}')">${stock.name}</span>`;
 
         const tr = document.createElement('tr');
-        if (tableId === 'stock-table-us') {
+        if (tableId === 'stock-table-us' || tableId === 'stock-table-reit') {
           tr.innerHTML = `
             <td>${nameCell}</td>
             <td>${stock.dividend}</td>
-            <td><input type="number" min="0" value="${stock.basePrice}" onchange="updateBasePrice('${tableId}', '${summaryId}', ${index}, this.value)"></td>
+            <td><input type="number" min="0" value="${stock.basePrice}" onchange="updateBasePrice('${tableId}', null, ${index}, this.value)"></td>
             <td>${yieldCalc}</td>
             <td>${investAmount}</td>
           `;
@@ -176,20 +195,25 @@
 
     function resetQuantities(type) {
       const list = type === 'japan' ? japanStocks :
-                   type === 'us' ? usStocks : hdvStocks;
+                   type === 'us' ? usStocks :
+                   type === 'reit' ? reitStocks : hdvStocks;
       list.forEach(stock => {
         if ('quantity' in stock) stock.quantity = 0;
       });
       const tableId = type === 'japan' ? 'stock-table-japan' :
-                      type === 'us' ? 'stock-table-us' : 'stock-table-hdv';
+                      type === 'us' ? 'stock-table-us' :
+                      type === 'reit' ? 'stock-table-reit' : 'stock-table-hdv';
       const summaryId = type === 'japan' ? 'summary-japan' :
-                        type === 'us' ? null : 'summary-hdv';
+                        type === 'reit' ? null :
+                        type === 'hdv' ? 'summary-hdv' : null;
       renderTable(list, tableId, summaryId);
     }
 
     function getListById(tableId) {
       return tableId === 'stock-table-japan' ? japanStocks :
-             tableId === 'stock-table-us' ? usStocks : hdvStocks;
+             tableId === 'stock-table-us' ? usStocks :
+             tableId === 'stock-table-reit' ? reitStocks :
+             hdvStocks;
     }
 
     function showMemo(memoText) {
@@ -204,6 +228,7 @@
     }
 
     renderTable(japanStocks, 'stock-table-japan', 'summary-japan');
+    renderTable(reitStocks, 'stock-table-reit', null); // ← 新しく追加
     renderTable(usStocks, 'stock-table-us', null);
     renderTable(hdvStocks, 'stock-table-hdv', 'summary-hdv');
   </script>
