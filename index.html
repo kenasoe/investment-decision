@@ -92,18 +92,18 @@
     ];
 
     const usStocks = [
-      { name: 'VYM', dividend: 310, basePrice: 11467, memo: '今の高配当銘柄400銘柄' },
-      { name: 'SPYD', dividend: 455, basePrice: 10651, memo: 'SP500から80銘柄　配当中心、リスク高め　増配はせず、目先を優先' },
-      { name: 'SCHD', dividend: 306, basePrice: 9027, memo: '10年以上の増配企業　100銘柄　配当+成長　年率増配率11.06％' }
+      { name: 'VYM', dividend: 310, basePrice: 11467, memo: '今の高配当銘柄400銘柄', targetIncomePerDay: 87  },
+      { name: 'SPYD', dividend: 455, basePrice: 10651, memo: 'SP500から80銘柄　配当中心、リスク高め　増配はせず、目先を優先', targetIncomePerDay: 87 },
+      { name: 'SCHD', dividend: 306, basePrice: 9027, memo: '10年以上の増配企業　100銘柄　配当+成長　年率増配率11.06％', targetIncomePerDay: 174 }
     ];
 
+     const reitStocks = [
+      { name: 'ETF1489', dividend: 87, basePrice: 2247, memo: '50/日経225 コスト0.37 ', targetIncomePerDay: 202.5 },
+      { name: 'SBI日本高配当', dividend: 530, basePrice: 11991, memo: '中型株へも投資 コスト0.1', targetIncomePeDay: 202.5 }
+    ];
+     
     const hdvStocks = [
       { name: 'HDV', dividend: 5.7, price: 227.7, memo: '75銘柄 安全志向' }
-    ];
-
-    const reitStocks = [
-      { name: 'ETF1489', dividend: 87, basePrice: 2247, memo: '50/日経225 コスト0.37 ' },
-      { name: 'SBI日本高配当', dividend: 530, basePrice: 11991, memo: '中型株へも投資 コスト0.1' }
     ];
 
     function renderTable(stockList, tableId, summaryId) {
@@ -117,14 +117,14 @@
         let yieldCalc = '0.00';
         let investAmount = '-';
 
-        if (tableId === 'stock-table-us' || tableId === 'stock-table-reit') {
-          yieldCalc = stock.basePrice ? (stock.dividend / stock.basePrice * 100).toFixed(2) : '0.00';
-          const yieldValue = stock.basePrice ? stock.dividend / stock.basePrice : 0;
-          const base = stock.name.includes('SCHD') ? 174 : 87;
-          investAmount = yieldValue > 0 ? Math.round((base / yieldValue) / 100) * 100 : '-';
-        } else {
-          yieldCalc = stock.price ? (stock.dividend / stock.price * 100).toFixed(2) : '0.00';
-        }
+        if (tableId === 'stock-table-us' || tableId === 'stock-table-reit') {yieldCalc = stock.basePrice ? (stock.dividend / stock.basePrice * 100).toFixed(2) : '0.00';
+  const yieldValue = stock.basePrice ? stock.dividend / stock.basePrice : 0;
+
+  const target = stock.targetIncomePerDay || 87;
+  investAmount = yieldValue > 0 ? Math.round((target / yieldValue) / 100) * 100 : '-';
+} else {
+  yieldCalc = stock.price ? (stock.dividend / stock.price * 100).toFixed(2) : '0.00';
+}
 
         const isOk = stock.targetYield !== undefined ? yieldCalc >= stock.targetYield : null;
         const nameCell = `<span style="cursor:pointer; text-decoration:underline;" onclick="showMemo('${stock.memo || ''}')">${stock.name}</span>`;
