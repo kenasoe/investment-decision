@@ -1,99 +1,92 @@
 <!DOCTYPE html>
-<html lang="ja">
+<html lang='ja'>
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset='UTF-8'>
+  <meta name='viewport' content='width=device-width, initial-scale=1.0'>
   <title>配当利回り</title>
   <style>
+    /* ベーススタイル: フォント、背景 */
     body { font-family: sans-serif; padding: 20px; background-color: #f9f9f9; }
+    /* タイトルを中央揃え */
     h1 { text-align: center; }
-    #summary-japan, #summary-hdv {
-      font-size: 1.2em; margin-bottom: 20px;
-    }
+    /* サマリー表示 */
+    #summary-japan, #summary-hdv { font-size: 1.2em; margin-bottom: 20px; }
+    /* テーブルスタイル */
     table { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
     th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
     th { background-color: #eee; }
+    /* OK/NGの色 */
     .ok { color: green; font-weight: bold; }
     .ng { color: red; font-weight: bold; }
+    /* モバイル対応 */
     @media (max-width: 480px) {
-  body {
-    font-size: 16px;
-  }
-
-  h1 {
-    font-size: 1.6em;
-  }
-
-  h2 {
-    font-size: 1.3em;
-    margin-top: 30px;
-  }
-
-  th, td {
-    font-size: 14px;
-    padding: 6px 4px;
-    white-space: nowrap;
-  }
-}
-
+      body { font-size: 16px; }
+      h1 { font-size: 1.6em; }
+      h2 { font-size: 1.3em; margin-top: 30px; }
+      th, td { font-size: 14px; padding: 6px 4px; white-space: nowrap; }
+    }
   </style>
 </head>
 <body>
+  <!-- ページ見出し -->
   <h1>配当利回り 毎日810円</h1>
-
+  
+  <!-- 日本株セクション -->
   <h2>日本株405円</h2>
-  <div id="summary-japan">合計配当金: 0 円 / 合計株数: 0 株</div>
+  <div id='summary-japan'>合計配当金: 0 円 / 合計株数: 0 株</div>
   <button onclick="resetQuantities('japan')">株数リセット</button>
   <table>
     <thead>
       <tr>
-        <th>銘柄名</th><th>配当金（円）</th><th>目標利回り（%）</th>
-        <th>株価（円）</th><th>株数</th><th>利回り（%）</th><th>判定</th>
+        <th>銘柄名</th><th>配当金（円）</th><th>目標利回り（%）</th><th>株価（円）</th><th>株数</th><th>利回り（%）</th><th>判定</th>
       </tr>
     </thead>
-    <tbody id="stock-table-japan"></tbody>
+    <tbody id='stock-table-japan'></tbody>
   </table>
 
+  <!-- 日本高配当ETFセクション -->
   <h2>日本高配当ETF</h2>
   <table>
     <thead>
       <tr>
-        <th>銘柄名</th><th>配当金（円）</th><th>基準価格（円）</th>
-        <th>利回り（%）</th><th>投資額（円）</th>
+        <th>銘柄名</th><th>配当金（円）</th><th>基準価格（円）</th><th>利回り（%）</th><th>投資額（円）</th>
       </tr>
     </thead>
-    <tbody id="stock-table-reit"></tbody>
+    <tbody id='stock-table-reit'></tbody>
   </table>
 
+  <!-- 米国高配当株セクション -->
   <h2>米国高配当株 (VYM, SPYD, SCHD)</h2>
   <table>
     <thead>
       <tr>
-        <th>銘柄名</th><th>配当金（円）</th><th>基準価格（円）</th>
-        <th>利回り（%）</th><th>投資額（円）</th>
+        <th>銘柄名</th><th>配当金（円）</th><th>基準価格（円）</th><th>利回り（%）</th><th>投資額（円）</th>
       </tr>
     </thead>
-    <tbody id="stock-table-us"></tbody>
+    <tbody id='stock-table-us'></tbody>
   </table>
 
+  <!-- HDVセクション -->
   <h2>HDV</h2>
-  <div id="summary-hdv">合計配当金: 0 円 / 合計株数: 0 株</div>
+  <div id='summary-hdv'>合計配当金: 0 円 / 合計株数: 0 株</div>
   <table>
     <thead>
       <tr>
         <th>銘柄名</th><th>配当金（円）</th><th>株価（円）</th><th>株数</th><th>利回り（%）</th>
       </tr>
     </thead>
-    <tbody id="stock-table-hdv"></tbody>
+    <tbody id='stock-table-hdv'></tbody>
   </table>
 
-  <div id="memoModal" style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); background:#fff; padding:20px; border:1px solid #ccc; box-shadow:0 0 10px rgba(0,0,0,0.3); z-index:9999;">
-    <div id="memoContent" style="margin-bottom:10px;"></div>
-    <button onclick="closeMemo()">閉じる</button>
+  <!-- メモ表示モーダル -->
+  <div id='memoModal' style='display:none; position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); background:#fff; padding:20px; border:1px solid #ccc; box-shadow:0 0 10px rgba(0,0,0,0.3); z-index:9999;'>
+    <div id='memoContent' style='margin-bottom:10px;'></div>
+    <button onclick='closeMemo()'>閉じる</button>
   </div>
-  <div id="modalOverlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.4); z-index:9998;" onclick="closeMemo()"></div>
+  <div id='modalOverlay' style='display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.4); z-index:9998;' onclick='closeMemo()'></div>
 
-   <script>
+  <script>
+    // 日本株データの定義
     const japanStocks = [
       { name: '王子HD(8.9万)', dividend: 36, targetYield: 4.0, price: 750, memo: '大手製紙では高信用 安定増配×1.1 JCR:AA- R&I:A+' },
       { name: 'JT(59万)', dividend: 194, targetYield: 4.5, price: 4307, memo: '過去は4000円未満で買っている JCR:AA+ R&I:AA' },
@@ -112,21 +105,25 @@
       { name: 'LIXIL', dividend: 90, targetYield: 5.0, price: 1718, memo: '配当は安定、低利益 JCR:A+ R&I:A' }
     ];
 
+    // 米国高配当株データの定義
     const usStocks = [
-      { name: 'VYM', dividend: 310, basePrice: 11914, memo: '今の高配当銘柄400銘柄', targetIncomePerDay: 87  },
+      { name: 'VYM', dividend: 310, basePrice: 11914, memo: '今の高配当銘柄400銘柄', targetIncomePerDay: 87 },
       { name: 'SPYD', dividend: 455, basePrice: 11187, memo: 'SP500から80銘柄　配当中心、リスク高め　増配はせず、目先を優先', targetIncomePerDay: 87 },
       { name: 'SCHD', dividend: 306, basePrice: 9522, memo: '10年以上の増配企業　100銘柄　配当+成長　年率増配率11.06％', targetIncomePerDay: 174 }
     ];
 
-     const reitStocks = [
-      { name: 'ETF1489', dividend: 88, basePrice: 2279, memo: '50/日経225 コスト0.37 ', targetIncomePerDay: 202.5 },
+    // 日本高配当ETFデータの定義
+    const reitStocks = [
+      { name: 'ETF1489', dividend: 88, basePrice: 2279, memo: '50/日経225 コスト0.37', targetIncomePerDay: 202.5 },
       { name: 'SBI日本高配当', dividend: 510, basePrice: 12116, memo: '中型株へも投資 コスト0.1', targetIncomePerDay: 202.5 }
     ];
-     
+
+    // HDVデータの定義
     const hdvStocks = [
       { name: 'HDV', dividend: 5.7, price: 238, memo: '75銘柄 安全志向' }
     ];
 
+    /** テーブルを描画する関数 */
     function renderTable(stockList, tableId, summaryId) {
       const table = document.getElementById(tableId);
       table.innerHTML = '';
@@ -138,122 +135,22 @@
         let yieldCalc = '0.00';
         let investAmount = '-';
 
-        if (tableId === 'stock-table-us' || tableId === 'stock-table-reit') {yieldCalc = stock.basePrice ? (stock.dividend / stock.basePrice * 100).toFixed(2) : '0.00';
-  const yieldValue = stock.basePrice ? stock.dividend / stock.basePrice : 0;
-
-  const target = stock.targetIncomePerDay || 87;
-  investAmount = yieldValue > 0 ? Math.round((target / yieldValue) / 100) * 100 : '-';
-} else {
-  yieldCalc = stock.price ? (stock.dividend / stock.price * 100).toFixed(2) : '0.00';
-}
+        if (tableId === 'stock-table-us' || tableId === 'stock-table-reit') {
+          yieldCalc = stock.basePrice ? (stock.dividend / stock.basePrice * 100).toFixed(2) : '0.00';
+          const yieldValue = stock.basePrice ? stock.dividend / stock.basePrice : 0;
+          const target = stock.targetIncomePerDay || 87;
+          investAmount = yieldValue > 0 ? Math.round((target / yieldValue) / 100) * 100 : '-';
+        } else {
+          yieldCalc = stock.price ? (stock.dividend / stock.price * 100).toFixed(2) : '0.00';
+        }
 
         const isOk = stock.targetYield !== undefined ? yieldCalc >= stock.targetYield : null;
-        const nameCell = `<span style="cursor:pointer; text-decoration:underline;" onclick="showMemo('${stock.memo || ''}')">${stock.name}</span>`;
+        const nameCell = `<span style='cursor:pointer; text-decoration:underline;' onclick='showMemo("${stock.memo || ''}")'>${stock.name}</span>`;
 
         const tr = document.createElement('tr');
         if (tableId === 'stock-table-us' || tableId === 'stock-table-reit') {
           tr.innerHTML = `
             <td>${nameCell}</td>
             <td>${stock.dividend}</td>
-            <td><input type="number" min="0" value="${stock.basePrice}" onchange="updateBasePrice('${tableId}', null, ${index}, this.value)"></td>
+            <td><input type='number' min='0' value='${stock.basePrice}' onchange='updateBasePrice("${tableId}", null, ${index}, this.value)'></td>
             <td>${yieldCalc}</td>
-            <td>${investAmount}</td>
-          `;
-        } else if (tableId === 'stock-table-hdv') {
-          tr.innerHTML = `
-            <td>${nameCell}</td>
-            <td>${stock.dividend}</td>
-            <td><input type="number" min="1" value="${stock.price}" onchange="updatePrice('${tableId}', '${summaryId}', ${index}, this.value)"></td>
-            <td><input type="number" min="0" value="${stock.quantity}" onchange="updateQuantity('${tableId}', '${summaryId}', ${index}, this.value)"></td>
-            <td>${yieldCalc}</td>
-          `;
-        } else {
-          tr.innerHTML = `
-            <td>${nameCell}</td>
-            <td>${stock.dividend}</td>
-            <td>${stock.targetYield}</td>
-            <td style="width:7%;"><input type="number" min="1" value="${stock.price}" onchange="updatePrice('${tableId}', '${summaryId}', ${index}, this.value)"></td>
-            <td style="width:7%;"><input type="number" min="0" value="${stock.quantity}" onchange="updateQuantity('${tableId}', '${summaryId}', ${index}, this.value)"></td>
-            <td>${yieldCalc}</td>
-            <td class="${isOk ? 'ok' : 'ng'}">${isOk ? 'OK' : 'NG'}</td>
-          `;
-        }
-
-        table.appendChild(tr);
-        if (stock.quantity) {
-          totalDividend += stock.dividend * stock.quantity;
-          totalQuantity += stock.quantity;
-        }
-      });
-
-      if (summaryId) {
-        document.getElementById(summaryId).innerText =
-          `合計配当金: ${totalDividend.toFixed(0)} 円 / 合計株数: ${totalQuantity} 株`;
-      }
-    }
-
-    function updateQuantity(tableId, summaryId, index, value) {
-      const list = getListById(tableId);
-      list[index].quantity = parseInt(value) || 0;
-      renderTable(list, tableId, summaryId);
-    }
-
-    function updatePrice(tableId, summaryId, index, value) {
-      const list = getListById(tableId);
-      list[index].price = parseFloat(value) || 0;
-      renderTable(list, tableId, summaryId);
-    }
-
-    function updateBasePrice(tableId, summaryId, index, value) {
-      const list = getListById(tableId);
-      list[index].basePrice = parseFloat(value) || 0;
-      renderTable(list, tableId, summaryId);
-    }
-
-    function resetQuantities(type) {
-      const list = type === 'japan' ? japanStocks :
-                   type === 'us' ? usStocks :
-                   type === 'reit' ? reitStocks : hdvStocks;
-      list.forEach(stock => {
-        if ('quantity' in stock) stock.quantity = 0;
-      });
-      const tableId = type === 'japan' ? 'stock-table-japan' :
-                      type === 'us' ? 'stock-table-us' :
-                      type === 'reit' ? 'stock-table-reit' : 'stock-table-hdv';
-      const summaryId = type === 'japan' ? 'summary-japan' :
-                        type === 'reit' ? null :
-                        type === 'hdv' ? 'summary-hdv' : null;
-      renderTable(list, tableId, summaryId);
-    }
-
-    function getListById(tableId) {
-      return tableId === 'stock-table-japan' ? japanStocks :
-             tableId === 'stock-table-us' ? usStocks :
-             tableId === 'stock-table-reit' ? reitStocks :
-             hdvStocks;
-    }
-
-    function showMemo(memoText) {
-      document.getElementById('memoContent').innerText = memoText || '（メモは登録されていません）';
-      document.getElementById('memoModal').style.display = 'block';
-      document.getElementById('modalOverlay').style.display = 'block';
-    }
-
-    function closeMemo() {
-      document.getElementById('memoModal').style.display = 'none';
-      document.getElementById('modalOverlay').style.display = 'none';
-    }
-
-    renderTable(japanStocks, 'stock-table-japan', 'summary-japan');
-    renderTable(reitStocks, 'stock-table-reit', null); // ← 新しく追加
-    renderTable(usStocks, 'stock-table-us', null);
-    renderTable(hdvStocks, 'stock-table-hdv', 'summary-hdv');
-  </script>
-
-  <div style="text-align:center; margin-top: 40px;">
-    <a href="https://finance.yahoo.co.jp/quote/89311241" target="_blank">VYM</a> |
-    <a href="https://finance.yahoo.co.jp/quote/89312241" target="_blank">SPYD</a> |
-    <a href="https://finance.yahoo.co.jp/quote/8931224C" target="_blank">SCHD</a>
-  </div>
-</body>
-</html>
