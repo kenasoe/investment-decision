@@ -75,32 +75,32 @@
 
   <script>
     const japanStocks = [
-      { name: '電通(11万)', dividend: 139.5, targetYield: 4.5, price: 2835, memo: '安定増配×1.5 R&I:AA-' },
-      { name: '王子HD(8.9万)', dividend: 36, targetYield: 4.0, price: 750, memo: '大手製紙では高信用 安定増配×1.1 JCR:AA- R&I:A+' },
-      { name: 'JT(59万)', dividend: 194, targetYield: 4.5, price: 4307, memo: '過去は4000円未満で買っている JCR:AA+ R&I:AA' },
-      { name: '積水ハウス(4.6万)', dividend: 144, targetYield: 4.6, price: 3167, memo: '4.5→4.6へ引上げ 安定増配 JCR:AA R&I:AA' },
-      { name: 'INPEX(11万)', dividend: 90, targetYield: 4.5, price: 2071, memo: '増配×1.9 JCR:AA+ R&I:AA' },
-      { name: 'ENEOS(2.5万)', dividend: 30, targetYield: 4.5, price: 741, memo: '増配×1.2 ガソリン代の一部に JCR:AA- R&I:A+' },
-      { name: 'トヨタ(30万)', dividend: 95, targetYield: 3.5, price: 2532, memo: 'JCR:AAA R&I:AAA' },
-      { name: '三菱商事(69万)', dividend: 110, targetYield: 3.6, price: 2862, memo: '4.0→3.8へ引下げ R&I:AA' },
-      { name: 'NTT(9.3万)', dividend: 5.3, targetYield: 3.5, price: 151, memo: '安定増配×1.6 JCR:AAA' },
-      { name: '東京海上(7.8万)', dividend: 210, targetYield: 3.5, price: 5887, memo: 'JCR:AAA' },
-      { name: '大和ハウス(3.9万)', dividend: 165, targetYield: 3.5, price: 4900, memo: 'JCR:AA R&I:AA-' },
-      { name: 'アサヒ', dividend: 52, targetYield: 3.5, price: 1838, memo: 'JCR:AA- R&I:A+' },
-      { name: '伊藤忠(10万)', dividend: 200, targetYield: 3.5, price: 7527 },
+      { name: '電通(10.7万)', dividend: 139.5, targetYield: 4.5, price: 2829, memo: '安定増配×1.5 R&I:AA-' },
+      { name: '王子HD(9.4万)', dividend: 36, targetYield: 4.0, price: 740, memo: '大手製紙では高信用 安定増配×1.1 JCR:AA- R&I:A+' },
+      { name: 'JT(59万)', dividend: 194, targetYield: 4.5, price: 4302, memo: '過去は4000円未満で買っている JCR:AA+ R&I:AA' },
+      { name: '積水ハウス(4.7万)', dividend: 144, targetYield: 4.6, price: 3136, memo: '4.5→4.6へ引上げ 安定増配 JCR:AA R&I:AA' },
+      { name: 'INPEX(12万)', dividend: 90, targetYield: 4.5, price: 2039, memo: '増配×1.9 JCR:AA+ R&I:AA' },
+      { name: 'ENEOS(2.6万)', dividend: 30, targetYield: 4.5, price: 743, memo: '増配×1.2 ガソリン代の一部に JCR:AA- R&I:A+' },
+      { name: 'トヨタ(32万)', dividend: 95, targetYield: 3.5, price: 2496, memo: 'JCR:AAA R&I:AAA' },
+      { name: '三菱商事(71万)', dividend: 110, targetYield: 3.6, price: 2914, memo: '4.0→3.8へ引下げ R&I:AA' },
+      { name: 'NTT(10.8万)', dividend: 5.3, targetYield: 3.5, price: 150, memo: '安定増配×1.6 JCR:AAA' },
+      { name: '東京海上(8.2万)', dividend: 210, targetYield: 3.5, price: 5895, memo: 'JCR:AAA' },
+      { name: '大和ハウス(3.9万)', dividend: 165, targetYield: 3.5, price: 4898, memo: 'JCR:AA R&I:AA-' },
+      { name: 'アサヒ', dividend: 52, targetYield: 3.5, price: 1878, memo: 'JCR:AA- R&I:A+' },
+      { name: '伊藤忠(10万)', dividend: 200, targetYield: 3.5, price: 7606 },
       { name: '野村HD', dividend: 47, targetYield: 4.0, price: 939, memo: 'JCR:AA- R&I:A' },
       { name: 'LIXIL', dividend: 90, targetYield: 5.0, price: 1718, memo: '配当は安定、低利益 JCR:A+ R&I:A' }
     ];
     const usStocks = [
-      { name: 'VYM', dividend: 310, basePrice: 11914, memo: '今の高配当銘柄400銘柄 87円', targetIncomePerDay: 87 },
-      { name: 'SPYD', dividend: 455, basePrice: 11187, memo: 'SP500から80銘柄 配当中心、リスク高め 87円', targetIncomePerDay: 87 },
-      { name: 'SCHD', dividend: 306, basePrice: 9522, memo: '10年以上の増配企業 100銘柄 174円', targetIncomePerDay: 174 }
+      { name: 'VYM', dividend: 310, basePrice: 11993, memo: '今の高配当銘柄400銘柄 87円', targetIncomePerDay: 87 },
+      { name: 'SPYD', dividend: 455, basePrice: 11203, memo: 'SP500から80銘柄 配当中心、リスク高め 87円', targetIncomePerDay: 87 },
+      { name: 'SCHD', dividend: 306, basePrice: 9527, memo: '10年以上の増配企業 100銘柄 174円', targetIncomePerDay: 174 }
     ];
     const reitStocks = [
-      { name: 'ETF1489', dividend: 88, basePrice: 2279, memo: '50/日経225 コスト0.37', targetIncomePerDay: 202.5 },
-      { name: 'SBI日本高配当', dividend: 510, basePrice: 12116, memo: '中型株へも投資 コスト0.1', targetIncomePerDay: 202.5 }
+      { name: 'ETF1489', dividend: 88, basePrice: 2269, memo: '50/日経225 コスト0.37', targetIncomePerDay: 202.5 },
+      { name: 'SBI日本高配当', dividend: 510, basePrice: 12101, memo: '中型株へも投資 コスト0.1', targetIncomePerDay: 202.5 }
     ];
-    const hdvStocks = [ { name: 'HDV', dividend: 5.7, price: 238, memo: '75銘柄 安全志向' } ];
+    const hdvStocks = [ { name: 'HDV', dividend: 5.7, price: 237.7, memo: '75銘柄 安全志向' } ];
 
     function renderTable(stockList, tableId, summaryId) {
       const table = document.getElementById(tableId); table.innerHTML = '';
