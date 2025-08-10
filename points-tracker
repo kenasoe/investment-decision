@@ -1,0 +1,567 @@
+import React, { useEffect, useMemo, useState } from "react";
+
+// Kids Points Tracker — single-file React app
+// 保存先: localStorage
+// 特徴: 2人の子ども向けポイント記録、月次精算、タスク(家事/勉強)の管理、CSV/JSONエクスポート、インポート
+// スタイル: TailwindCSS (このキャンバスでは自動で有効)
+
+// ---------- 型のざっくり定義 ----------
+/**
+ * settings: { childNames: [string, string], yenPerPoint: number }
+ * tasks: Array<{ id: string, type: "chore"|"study", name: string, points: number }>
+ * entries: Array<{ id: string, childIndex: 0|1, type: "chore"|"study", taskId?: string, customName?: string, points: number, date: string /* YYYY-MM-DD *\/, memo?: string }>
+ * settlements: Array<{ id: string, month: string /* YYYY-MM *\/, snapshot: { totals: [number, number], yenPerPoint: number, createdAt: string }, note?: string }>
+ */
+
+const LS_KEY = "kids_points_tracker_v1";
+
+function uid() {
+  return Math.random().toString(36).slice(2, 10) + Date.now().toString(36).slice(-4);
+}
+
+function todayStr() {
+  const d = new Date();
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  const dd = String(d.getDate()).padStart(2, "0");
+  return `${d.getFullYear()}-${mm}-${dd}`;
+}
+
+function monthStr(d = new Date()) {
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  return `${d.getFullYear()}-${mm}`;
+}
+
+const defaultState = {
+  settings: {
+    childNames: ["上の子", "下の子"],
+    yenPerPoint: 5,
+  },
+  tasks: [
+    { id: uid(), type: "chore", name: "食器洗い", points: 5 },
+    { id: uid(), type: "chore", name: "掃除機がけ", points: 8 },
+    { id: uid(), type: "study", name: "計算ドリル1枚", points: 3 },
+    { id: uid(), type: "study", name: "英単語10個", points: 4 },
+  ],
+  entries: [],
+  settlements: [],
+};
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem(LS_KEY);
+    if (!raw) return defaultState;
+    const parsed = JSON.parse(raw);
+    // 軽いマイグレーション: 欠損フィールドを補う
+    return {
+      settings: { ...defaultState.settings, ...(parsed.settings || {}) },
+      tasks: Array.isArray(parsed.tasks) ? parsed.tasks : defaultState.tasks,
+      entries: Array.isArray(parsed.entries) ? parsed.entries : [],
+      settlements: Array.isArray(parsed.settlements) ? parsed.settlements : [],
+    };
+  } catch {
+    return defaultState;
+  }
+}
+
+function saveState(state) {
+  localStorage.setItem(LS_KEY, JSON.stringify(state));
+}
+
+const Tab = {
+  DASHBOARD: "dashboard",
+  ADD: "add",
+  TASKS: "tasks",
+  SETTLE: "settle",
+  DATA: "data",
+};
+
+export default function App() {
+  const [state, setState] = useState(loadState);
+  const [activeTab, setActiveTab] = useState(Tab.DASHBOARD);
+  const [selectedMonth, setSelectedMonth] = useState(monthStr());
+  const [showSettings, setShowSettings] = useState(false);
+
+  useEffect(() => {
+    saveState(state);
+  }, [state]);
+
+  // 月フィルタ
+  const monthlyEntries = useMemo(() => {
+    return state.entries.filter((e) => (e.date || "").slice(0, 7) === selectedMonth);
+  }, [state.entries, selectedMonth]);
+
+  const monthlyTotals = useMemo(() => {
+    const totals = [0, 0];
+    for (const e of monthlyEntries) totals[e.childIndex] += Number(e.points) || 0;
+    return totals;
+  }, [monthlyEntries]);
+
+  const totalPoints = monthlyTotals[0] + monthlyTotals[1];
+
+  const settledThisMonth = state.settlements.find((s) => s.month === selectedMonth);
+
+  // 便利関数
+  const updateSettings = (patch) => setState((s) => ({ ...s, settings: { ...s.settings, ...patch } }));
+  const addTask = (t) => setState((s) => ({ ...s, tasks: [...s.tasks, t] }));
+  const deleteTask = (id) => setState((s) => ({ ...s, tasks: s.tasks.filter((t) => t.id !== id) }));
+  const addEntry = (e) => setState((s) => ({ ...s, entries: [e, ...s.entries] }));
+  const deleteEntry = (id) => setState((s) => ({ ...s, entries: s.entries.filter((e) => e.id !== id) }));
+  const settleMonth = (note) => {
+    const snapshot = {
+      totals: monthlyTotals,
+      yenPerPoint: state.settings.yenPerPoint,
+      createdAt: new Date().toISOString(),
+    };
+    const rec = { id: uid(), month: selectedMonth, snapshot, note };
+    setState((s) => ({ ...s, settlements: [rec, ...s.settlements] }));
+  };
+  const deleteSettlement = (id) => setState((s) => ({ ...s, settlements: s.settlements.filter((x) => x.id !== id) }));
+
+  return (
+    <div className="min-h-screen bg-gray-50 text-gray-800">
+      <header className="sticky top-0 z-10 bg-white/90 backdrop-blur border-b">
+        <div className="max-w-5xl mx-auto px-4 py-3 flex items-center gap-3">
+          <div className="text-2xl font-bold">家事・勉強ポイント</div>
+          <div className="ml-auto flex items-center gap-2">
+            <input
+              type="month"
+              value={selectedMonth}
+              onChange={(e) => setSelectedMonth(e.target.value)}
+              className="border rounded px-2 py-1"
+            />
+            <button
+              onClick={() => setShowSettings(true)}
+              className="px-3 py-1.5 rounded-xl border shadow-sm hover:shadow bg-white"
+            >
+              設定
+            </button>
+          </div>
+        </div>
+        <nav className="max-w-5xl mx-auto px-2 pb-2">
+          <div className="grid grid-cols-5 gap-2">
+            <TabButton label="ダッシュボード" active={activeTab===Tab.DASHBOARD} onClick={()=>setActiveTab(Tab.DASHBOARD)} />
+            <TabButton label="記録追加" active={activeTab===Tab.ADD} onClick={()=>setActiveTab(Tab.ADD)} />
+            <TabButton label="タスク管理" active={activeTab===Tab.TASKS} onClick={()=>setActiveTab(Tab.TASKS)} />
+            <TabButton label="精算" active={activeTab===Tab.SETTLE} onClick={()=>setActiveTab(Tab.SETTLE)} />
+            <TabButton label="データ" active={activeTab===Tab.DATA} onClick={()=>setActiveTab(Tab.DATA)} />
+          </div>
+        </nav>
+      </header>
+
+      <main className="max-w-5xl mx-auto p-4 space-y-6">
+        {activeTab === Tab.DASHBOARD && (
+          <Dashboard
+            childNames={state.settings.childNames}
+            monthlyTotals={monthlyTotals}
+            totalPoints={totalPoints}
+            yenPerPoint={state.settings.yenPerPoint}
+            entries={monthlyEntries}
+            deleteEntry={deleteEntry}
+            settledThisMonth={!!settledThisMonth}
+          />
+        )}
+
+        {activeTab === Tab.ADD && (
+          <AddEntry
+            childNames={state.settings.childNames}
+            tasks={state.tasks}
+            onAdd={addEntry}
+          />
+        )}
+
+        {activeTab === Tab.TASKS && (
+          <Tasks tasks={state.tasks} onAdd={addTask} onDelete={deleteTask} />
+        )}
+
+        {activeTab === Tab.SETTLE && (
+          <Settle
+            month={selectedMonth}
+            childNames={state.settings.childNames}
+            totals={monthlyTotals}
+            yenPerPoint={state.settings.yenPerPoint}
+            settled={settledThisMonth}
+            settlements={state.settlements}
+            onSettle={settleMonth}
+            onDelete={deleteSettlement}
+          />
+        )}
+
+        {activeTab === Tab.DATA && (
+          <DataTab state={state} setState={setState} />
+        )}
+      </main>
+
+      {showSettings && (
+        <SettingsModal
+          onClose={() => setShowSettings(false)}
+          settings={state.settings}
+          onSave={(patch) => updateSettings(patch)}
+        />
+      )}
+    </div>
+  );
+}
+
+function TabButton({ label, active, onClick }) {
+  return (
+    <button
+      onClick={onClick}
+      className={`px-3 py-2 rounded-xl text-sm border ${active ? "bg-blue-600 text-white border-blue-600" : "bg-white hover:bg-gray-50"}`}
+    >
+      {label}
+    </button>
+  );
+}
+
+function Dashboard({ childNames, monthlyTotals, totalPoints, yenPerPoint, entries, deleteEntry, settledThisMonth }) {
+  const amounts = monthlyTotals.map((p) => p * yenPerPoint);
+  return (
+    <div className="space-y-6">
+      <div className="grid sm:grid-cols-3 gap-4">
+        <StatCard title="合計ポイント" value={totalPoints} sub={`= ￥${(amounts[0]+amounts[1]).toLocaleString()}`} />
+        <StatCard title={`${childNames[0]} のポイント`} value={monthlyTotals[0]} sub={`￥${amounts[0].toLocaleString()}`} />
+        <StatCard title={`${childNames[1]} のポイント`} value={monthlyTotals[1]} sub={`￥${amounts[1].toLocaleString()}`} />
+      </div>
+
+      {settledThisMonth && (
+        <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200">この月は精算済みです（記録の閲覧・追加は可能）</div>
+      )}
+
+      <section className="bg-white rounded-2xl shadow-sm border">
+        <header className="px-4 py-3 border-b font-semibold">活動ログ</header>
+        <div className="overflow-x-auto">
+          <table className="min-w-full text-sm">
+            <thead>
+              <tr className="bg-gray-50 text-gray-600">
+                <th className="p-2 text-left">日付</th>
+                <th className="p-2 text-left">子ども</th>
+                <th className="p-2 text-left">区分</th>
+                <th className="p-2 text-left">内容</th>
+                <th className="p-2 text-right">ポイント</th>
+                <th className="p-2 text-left">メモ</th>
+                <th className="p-2"></th>
+              </tr>
+            </thead>
+            <tbody>
+              {entries.length === 0 && (
+                <tr>
+                  <td className="p-4 text-center text-gray-500" colSpan={7}>今月の記録はまだありません</td>
+                </tr>
+              )}
+              {entries.map((e) => (
+                <tr key={e.id} className="border-t">
+                  <td className="p-2 whitespace-nowrap">{e.date}</td>
+                  <td className="p-2">{childNames[e.childIndex]}</td>
+                  <td className="p-2">{e.type === "chore" ? "家事" : "勉強"}</td>
+                  <td className="p-2">{e.taskId ? e.customName || "" : (e.customName || "カスタム")}</td>
+                  <td className="p-2 text-right">{e.points}</td>
+                  <td className="p-2">{e.memo || ""}</td>
+                  <td className="p-2 text-right">
+                    <button onClick={() => deleteEntry(e.id)} className="text-red-600 hover:underline">削除</button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+  );
+}
+
+function StatCard({ title, value, sub }) {
+  return (
+    <div className="bg-white rounded-2xl border shadow-sm p-4">
+      <div className="text-gray-600 text-sm">{title}</div>
+      <div className="text-3xl font-bold mt-1">{value}</div>
+      {sub && <div className="text-gray-500 mt-1">{sub}</div>}
+    </div>
+  );
+}
+
+function AddEntry({ childNames, tasks, onAdd }) {
+  const [childIndex, setChildIndex] = useState(0);
+  const [type, setType] = useState("chore");
+  const [date, setDate] = useState(todayStr());
+  const [taskId, setTaskId] = useState("");
+  const [customName, setCustomName] = useState("");
+  const [points, setPoints] = useState(0);
+  const [memo, setMemo] = useState("");
+
+  // タスク選択でポイント自動反映
+  useEffect(() => {
+    if (taskId) {
+      const t = tasks.find((t) => t.id === taskId);
+      if (t) {
+        setPoints(Number(t.points) || 0);
+        setCustomName(t.name);
+      }
+    }
+  }, [taskId, tasks]);
+
+  const filteredTasks = tasks.filter((t) => t.type === type);
+
+  const canSubmit = date && (taskId || customName) && points > 0;
+
+  const submit = () => {
+    if (!canSubmit) return;
+    onAdd({ id: uid(), childIndex, type, date, taskId: taskId || undefined, customName, points: Number(points), memo });
+    // リセット
+    setTaskId("");
+    setCustomName("");
+    setPoints(0);
+    setMemo("");
+  };
+
+  return (
+    <div className="bg-white rounded-2xl border shadow-sm p-4 space-y-4">
+      <div className="grid sm:grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm text-gray-600">子ども</label>
+          <select value={childIndex} onChange={(e)=>setChildIndex(Number(e.target.value))} className="mt-1 w-full border rounded px-3 py-2">
+            <option value={0}>{childNames[0]}</option>
+            <option value={1}>{childNames[1]}</option>
+          </select>
+        </div>
+        <div>
+          <label className="block text-sm text-gray-600">日付</label>
+          <input type="date" value={date} onChange={(e)=>setDate(e.target.value)} className="mt-1 w-full border rounded px-3 py-2" />
+        </div>
+        <div>
+          <label className="block text-sm text-gray-600">区分</label>
+          <div className="mt-1 flex gap-2">
+            <button onClick={()=>{setType("chore"); setTaskId("");}} className={`px-3 py-2 rounded-xl border ${type==="chore"?"bg-blue-600 text-white border-blue-600":"bg-white"}`}>家事</button>
+            <button onClick={()=>{setType("study"); setTaskId("");}} className={`px-3 py-2 rounded-xl border ${type==="study"?"bg-blue-600 text-white border-blue-600":"bg-white"}`}>勉強</button>
+          </div>
+        </div>
+        <div>
+          <label className="block text-sm text-gray-600">タスク（任意）</label>
+          <select value={taskId} onChange={(e)=>setTaskId(e.target.value)} className="mt-1 w-full border rounded px-3 py-2">
+            <option value="">選択しない（カスタム）</option>
+            {filteredTasks.map((t)=> (
+              <option key={t.id} value={t.id}>{t.name}（{t.points}pt）</option>
+            ))}
+          </select>
+        </div>
+        <div className="sm:col-span-2">
+          <label className="block text-sm text-gray-600">内容（カスタム名）</label>
+          <input value={customName} onChange={(e)=>setCustomName(e.target.value)} placeholder="例: 自主学習30分" className="mt-1 w-full border rounded px-3 py-2" />
+        </div>
+        <div>
+          <label className="block text-sm text-gray-600">ポイント</label>
+          <input type="number" value={points} onChange={(e)=>setPoints(Number(e.target.value))} className="mt-1 w-full border rounded px-3 py-2" />
+        </div>
+        <div>
+          <label className="block text-sm text-gray-600">メモ</label>
+          <input value={memo} onChange={(e)=>setMemo(e.target.value)} className="mt-1 w-full border rounded px-3 py-2" />
+        </div>
+      </div>
+      <div className="flex gap-2">
+        <button onClick={submit} disabled={!canSubmit} className={`px-4 py-2 rounded-xl border shadow-sm ${canSubmit?"bg-blue-600 text-white border-blue-600":"bg-gray-100 text-gray-400"}`}>追加</button>
+        <button onClick={()=>{setTaskId(""); setCustomName(""); setPoints(0); setMemo("");}} className="px-4 py-2 rounded-xl border bg-white">リセット</button>
+      </div>
+    </div>
+  );
+}
+
+function Tasks({ tasks, onAdd, onDelete }) {
+  const [type, setType] = useState("chore");
+  const [name, setName] = useState("");
+  const [points, setPoints] = useState(1);
+  const add = () => {
+    if (!name || points <= 0) return;
+    onAdd({ id: uid(), type, name, points: Number(points) });
+    setName(""); setPoints(1);
+  };
+
+  const chores = tasks.filter((t)=>t.type==="chore");
+  const studies = tasks.filter((t)=>t.type==="study");
+
+  return (
+    <div className="grid lg:grid-cols-2 gap-6">
+      <div className="bg-white rounded-2xl border shadow-sm p-4 space-y-3">
+        <div className="font-semibold">タスクを追加</div>
+        <div className="flex gap-2">
+          <button onClick={()=>setType("chore")} className={`px-3 py-2 rounded-xl border ${type==="chore"?"bg-blue-600 text-white border-blue-600":"bg-white"}`}>家事</button>
+          <button onClick={()=>setType("study")} className={`px-3 py-2 rounded-xl border ${type==="study"?"bg-blue-600 text-white border-blue-600":"bg-white"}`}>勉強</button>
+        </div>
+        <div className="grid sm:grid-cols-6 gap-3">
+          <input className="sm:col-span-4 border rounded px-3 py-2" placeholder="タスク名" value={name} onChange={(e)=>setName(e.target.value)} />
+          <input type="number" className="sm:col-span-1 border rounded px-3 py-2" placeholder="pt" value={points} onChange={(e)=>setPoints(Number(e.target.value))} />
+          <button onClick={add} className="sm:col-span-1 px-3 py-2 rounded-xl border bg-blue-600 text-white border-blue-600">追加</button>
+        </div>
+      </div>
+
+      <div className="space-y-6">
+        <TaskList title="家事タスク" list={chores} onDelete={onDelete} />
+        <TaskList title="勉強タスク" list={studies} onDelete={onDelete} />
+      </div>
+    </div>
+  );
+}
+
+function TaskList({ title, list, onDelete }) {
+  return (
+    <section className="bg-white rounded-2xl border shadow-sm">
+      <header className="px-4 py-3 border-b font-semibold">{title}</header>
+      <ul className="divide-y">
+        {list.length===0 && <li className="p-4 text-gray-500">なし</li>}
+        {list.map((t) => (
+          <li key={t.id} className="px-4 py-2 flex items-center gap-2">
+            <div className="font-medium">{t.name}</div>
+            <div className="text-gray-500">{t.points}pt</div>
+            <button onClick={()=>onDelete(t.id)} className="ml-auto text-red-600 hover:underline">削除</button>
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+
+function Settle({ month, childNames, totals, yenPerPoint, settled, settlements, onSettle, onDelete }) {
+  const amounts = totals.map((p) => p * yenPerPoint);
+  const [note, setNote] = useState("");
+  return (
+    <div className="space-y-6">
+      <section className="bg-white rounded-2xl border shadow-sm p-4">
+        <div className="text-sm text-gray-600">対象月</div>
+        <div className="text-2xl font-bold">{month}</div>
+        <div className="mt-3 grid sm:grid-cols-2 gap-4">
+          <div className="p-3 rounded-xl bg-gray-50 border">
+            <div className="text-gray-600 text-sm">{childNames[0]}</div>
+            <div className="text-xl font-bold">{totals[0]} pt <span className="text-gray-500 text-base">（￥{amounts[0].toLocaleString()}）</span></div>
+          </div>
+          <div className="p-3 rounded-xl bg-gray-50 border">
+            <div className="text-gray-600 text-sm">{childNames[1]}</div>
+            <div className="text-xl font-bold">{totals[1]} pt <span className="text-gray-500 text-base">（￥{amounts[1].toLocaleString()}）</span></div>
+          </div>
+        </div>
+        <div className="mt-3 text-gray-600">合計: <span className="font-semibold text-gray-900">{totals[0]+totals[1]} pt</span>（￥{(amounts[0]+amounts[1]).toLocaleString()}）</div>
+        <div className="mt-4 grid sm:grid-cols-3 gap-3">
+          <input className="sm:col-span-2 border rounded px-3 py-2" placeholder="メモ（例: 現金で支払い、図書カードで半分など）" value={note} onChange={(e)=>setNote(e.target.value)} />
+          <button
+            onClick={()=>onSettle(note)}
+            disabled={settled}
+            className={`px-4 py-2 rounded-xl border ${settled?"bg-gray-100 text-gray-400":"bg-emerald-600 text-white border-emerald-600"}`}
+          >
+            {settled?"精算済み":"この月を精算する"}
+          </button>
+        </div>
+      </section>
+
+      <section className="bg-white rounded-2xl border shadow-sm">
+        <header className="px-4 py-3 border-b font-semibold">精算履歴</header>
+        <ul className="divide-y">
+          {settlements.length===0 && <li className="p-4 text-gray-500">まだ精算履歴はありません</li>}
+          {settlements.map((s)=> (
+            <li key={s.id} className="px-4 py-3 flex items-center gap-3">
+              <div className="font-semibold">{s.month}</div>
+              <div className="text-gray-600 text-sm">{new Date(s.snapshot.createdAt).toLocaleString()}</div>
+              <div className="ml-auto text-sm text-gray-700">
+                {`上の子: ${s.snapshot.totals[0]}pt / 下の子: ${s.snapshot.totals[1]}pt  （@￥${s.snapshot.yenPerPoint}/pt）`}
+              </div>
+              {s.note && <div className="text-gray-500 text-sm">— {s.note}</div>}
+              <button onClick={()=>onDelete(s.id)} className="ml-2 text-red-600 hover:underline">削除</button>
+            </li>
+          ))}
+        </ul>
+      </section>
+    </div>
+  );
+}
+
+function DataTab({ state, setState }) {
+  const exportJSON = () => {
+    const blob = new Blob([JSON.stringify(state, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `kids_points_${monthStr()}_${Date.now()}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const exportCSV = () => {
+    const headers = ["id","date","child","type","name","points","memo","taskId"];
+    const rows = state.entries.map((e)=>[
+      e.id, e.date, e.childIndex, e.type, (e.customName||""), e.points, (e.memo||""), (e.taskId||"")
+    ]);
+    const csv = [headers.join(","), ...rows.map(r=>r.map(x=>`"${String(x).replaceAll('"','""')}"`).join(","))].join("\n");
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `kids_points_entries_${monthStr()}_${Date.now()}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const importJSON = async (file) => {
+    const text = await file.text();
+    try {
+      const parsed = JSON.parse(text);
+      setState(parsed);
+    } catch (e) {
+      alert("JSONの読み込みに失敗しました");
+    }
+  };
+
+  const clearAll = () => {
+    if (!confirm("すべてのデータを削除します。よろしいですか？")) return;
+    setState(defaultState);
+  };
+
+  return (
+    <div className="bg-white rounded-2xl border shadow-sm p-4 space-y-4">
+      <div className="font-semibold">エクスポート / インポート</div>
+      <div className="flex flex-wrap gap-2">
+        <button onClick={exportJSON} className="px-4 py-2 rounded-xl border bg-white">JSONを書き出し</button>
+        <button onClick={exportCSV} className="px-4 py-2 rounded-xl border bg-white">CSVを書き出し（記録のみ）</button>
+        <label className="px-4 py-2 rounded-xl border bg-white cursor-pointer">
+          JSONを読み込み
+          <input type="file" accept="application/json" className="hidden" onChange={(e)=>{ if (e.target.files?.[0]) importJSON(e.target.files[0]); }} />
+        </label>
+        <button onClick={clearAll} className="px-4 py-2 rounded-xl border text-red-600 bg-white">全消去</button>
+      </div>
+      <div className="text-sm text-gray-600">※ このアプリはすべてブラウザ内（localStorage）に保存します。端末が変わるとデータは同期されないため、必要に応じてエクスポートをご利用ください。</div>
+    </div>
+  );
+}
+
+function SettingsModal({ onClose, settings, onSave }) {
+  const [names, setNames] = useState(settings.childNames);
+  const [yenPerPoint, setYenPerPoint] = useState(settings.yenPerPoint);
+  const save = () => {
+    const nn = [String(names[0]||"").trim()||"上の子", String(names[1]||"").trim()||"下の子"];
+    onSave({ childNames: nn, yenPerPoint: Number(yenPerPoint)||0 });
+    onClose();
+  };
+  return (
+    <div className="fixed inset-0 bg-black/30 flex items-center justify-center p-4">
+      <div className="bg-white rounded-2xl w-full max-w-lg shadow-xl border">
+        <header className="px-4 py-3 border-b font-semibold">設定</header>
+        <div className="p-4 space-y-4">
+          <div>
+            <label className="block text-sm text-gray-600">子どもの名前（上）</label>
+            <input className="mt-1 w-full border rounded px-3 py-2" value={names[0]} onChange={(e)=>setNames([e.target.value, names[1]])} />
+          </div>
+          <div>
+            <label className="block text-sm text-gray-600">子どもの名前（下）</label>
+            <input className="mt-1 w-full border rounded px-3 py-2" value={names[1]} onChange={(e)=>setNames([names[0], e.target.value])} />
+          </div>
+          <div>
+            <label className="block text-sm text-gray-600">1ポイントあたり</label>
+            <div className="mt-1 flex items-center gap-2">
+              <input type="number" className="w-40 border rounded px-3 py-2" value={yenPerPoint} onChange={(e)=>setYenPerPoint(Number(e.target.value))} />
+              <span>円</span>
+            </div>
+          </div>
+        </div>
+        <footer className="px-4 py-3 border-t flex gap-2 justify-end">
+          <button onClick={onClose} className="px-4 py-2 rounded-xl border bg-white">キャンセル</button>
+          <button onClick={save} className="px-4 py-2 rounded-xl border bg-blue-600 text-white border-blue-600">保存</button>
+        </footer>
+      </div>
+    </div>
+  );
+}
