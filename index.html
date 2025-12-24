@@ -3,21 +3,23 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>配当利回り</title>
+  <title>配当利回り管理</title>
   <style>
     body { font-family: sans-serif; padding: 20px; background-color: #f9f9f9; }
     h1 { text-align: center; }
-    #summary-japan, #summary-hdv { font-size: 1.2em; margin-bottom: 20px; }
+    #summary-hdv { font-size: 1.2em; margin-bottom: 20px; }
     table { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
     th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
     th { background-color: #eee; }
     .ok { color: green; font-weight: bold; }
     .ng { color: red; font-weight: bold; }
+    input[type="number"] { width: 80px; text-align: right; }
     @media (max-width: 480px) {
       body { font-size: 16px; }
       h1 { font-size: 1.6em; }
       h2 { font-size: 1.3em; margin-top: 30px; }
       th, td { font-size: 14px; padding: 6px 4px; white-space: nowrap; }
+      input[type="number"] { width: 60px; }
     }
   </style>
 </head>
@@ -25,12 +27,15 @@
   <h1>Make 810 yen a day</h1>
 
   <h2>日本株405円</h2>
-  <div id="summary-japan">合計配当金: 0 円 / 合計株数: 0 株</div>
-  <button onclick="resetQuantities('japan')">株数リセット</button>
   <table>
     <thead>
       <tr>
-        <th>銘柄名</th><th>配当金（円）</th><th>目標利回り（%）</th><th>株価（円）</th><th>株数</th><th>利回り（%）</th><th>判定</th>
+        <th>銘柄名</th>
+        <th>配当金（円）</th>
+        <th>目標利回り（%）</th>
+        <th>株価（円）</th>
+        <th>利回り（%）</th>
+        <th>判定</th>
       </tr>
     </thead>
     <tbody id="stock-table-japan"></tbody>
@@ -40,7 +45,11 @@
   <table>
     <thead>
       <tr>
-        <th>銘柄名</th><th>配当金（円）</th><th>基準価格（円）</th><th>利回り（%）</th><th>投資額（円）</th>
+        <th>銘柄名</th>
+        <th>配当金（円）</th>
+        <th>基準価格（円）</th>
+        <th>利回り（%）</th>
+        <th>投資額（円）</th>
       </tr>
     </thead>
     <tbody id="stock-table-reit"></tbody>
@@ -50,7 +59,11 @@
   <table>
     <thead>
       <tr>
-        <th>銘柄名</th><th>配当金（円）</th><th>基準価格（円）</th><th>利回り（%）</th><th>投資額（円）</th>
+        <th>銘柄名</th>
+        <th>配当金（円）</th>
+        <th>基準価格（円）</th>
+        <th>利回り（%）</th>
+        <th>投資額（円）</th>
       </tr>
     </thead>
     <tbody id="stock-table-us"></tbody>
@@ -58,16 +71,21 @@
 
   <h2>HDV</h2>
   <div id="summary-hdv">合計配当金: 0 円 / 合計株数: 0 株</div>
+  <button onclick="resetQuantities('hdv')">株数リセット</button>
   <table>
     <thead>
       <tr>
-        <th>銘柄名</th><th>配当金（円）</th><th>株価（円）</th><th>株数</th><th>利回り（%）</th>
+        <th>銘柄名</th>
+        <th>配当金（円）</th>
+        <th>株価（円）</th>
+        <th>株数</th>
+        <th>利回り（%）</th>
       </tr>
     </thead>
     <tbody id="stock-table-hdv"></tbody>
   </table>
 
-  <div id="memoModal" style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); background:#fff; padding:20px; border:1px solid #ccc; box-shadow:0 0 10px rgba(0,0,0,0.3); z-index:9999;">
+  <div id="memoModal" style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); background:#fff; padding:20px; border:1px solid #ccc; box-shadow:0 0 10px rgba(0,0,0,0.3); z-index:9999; max-width: 90%;">
     <div id="memoContent" style="margin-bottom:10px;"></div>
     <button onclick="closeMemo()">閉じる</button>
   </div>
@@ -102,57 +120,48 @@
       { name: 'ETF1489', dividend: 88, basePrice: 2269, memo: '50/日経225 コスト0.37', targetIncomePerDay: 202.5 },
       { name: 'SBI日本高配当', dividend: 510, basePrice: 13348, memo: '中型株へも投資 コスト0.1', targetIncomePerDay: 202.5 }
     ];
-    const hdvStocks = [ { name: 'HDV', dividend: 5.7, price: 237.7, memo: '75銘柄 安全志向' } ];
+    const hdvStocks = [ { name: 'HDV', dividend: 5.7, price: 237.7, memo: '75銘柄 安全志向', quantity: 0 } ];
 
     function renderTable(stockList, tableId, summaryId) {
-      const table = document.getElementById(tableId); table.innerHTML = '';
-      let totalDividend=0, totalQuantity=0;
-      stockList.forEach((stock,i)=>{
-        stock.quantity=stock.quantity||0;
-        let yieldCalc='0.00', investAmount='-';
-        if(tableId==='stock-table-us'||tableId==='stock-table-reit'){
-          yieldCalc = stock.basePrice?(stock.dividend/stock.basePrice*100).toFixed(2):'0.00';
-          const val=stock.basePrice?stock.dividend/stock.basePrice:0;
-          investAmount=val>0?Math.round(( (stock.targetIncomePerDay||87)/val )/100)*100:'-';
-        } else yieldCalc=stock.price?(stock.dividend/stock.price*100).toFixed(2):'0.00';
-        const isOk = stock.targetYield!==undefined? yieldCalc>=stock.targetYield:null;
-        const nameCell=`<span style="cursor:pointer;text-decoration:underline;" onclick="showMemo('${stock.memo||''}')">${stock.name}</span>`;
-        const tr=document.createElement('tr');
-        if(tableId==='stock-table-us'||tableId==='stock-table-reit'){
-          tr.innerHTML=`<td>${nameCell}</td><td>${stock.dividend}</td><td><input type="number" min="0" value="${stock.basePrice}" onchange="updateBasePrice('${tableId}',null,${i},this.value)"></td><td>${yieldCalc}</td><td>${investAmount}</td>`;
-        }else if(tableId==='stock-table-hdv'){
-          tr.innerHTML=`<td>${nameCell}</td><td>${stock.dividend}</td><td><input type="number" min="1" value="${stock.price}" onchange="updatePrice('${tableId}','summary-hdv',${i},this.value)"></td><td><input type="number" min="0" value="${stock.quantity}" onchange="updateQuantity('${tableId}','summary-hdv',${i},this.value)"></td><td>${yieldCalc}</td>`;
-        }else{
-          tr.innerHTML=`<td>${nameCell}</td><td>${stock.dividend}</td><td>${stock.targetYield}</td><td><input type="number" min="1" value="${stock.price}" onchange="updatePrice('${tableId}','summary-japan',${i},this.value)"></td><td><input type="number" min="0" value="${stock.quantity}" onchange="updateQuantity('${tableId}','summary-japan',${i},this.value)"></td><td>${yieldCalc}</td><td class="${isOk?'ok':'ng'}">${isOk?'OK':'NG'}</td>`;
-        }
-        table.appendChild(tr);
-        if(stock.quantity){ totalDividend+=stock.dividend*stock.quantity; totalQuantity+=stock.quantity; }
-      });
-      if(summaryId)document.getElementById(summaryId).innerText=`合計配当金: ${totalDividend} 円 / 合計株数: ${totalQuantity} 株`;
-    }
-    function updateQuantity(tid,sid,i,val){ getListById(tid)[i].quantity=parseInt(val)||0; renderTable(getListById(tid),tid,sid); }
-    function updatePrice(tid,sid,i,val){ getListById(tid)[i].price=parseFloat(val)||0; renderTable(getListById(tid),tid,sid); }
-    function updateBasePrice(tid,sid,i,val){ getListById(tid)[i].basePrice=parseFloat(val)||0; renderTable(getListById(tid),tid,sid); }
-    function resetQuantities(type){ const list=(type==='japan'?japanStocks: type==='us'?usStocks: type==='reit'?reitStocks:hdvStocks); list.forEach(s=>{if('quantity' in s) s.quantity=0;});
-      const ids={japan:'stock-table-japan', us:'stock-table-us', reit:'stock-table-reit', hdv:'stock-table-hdv'};
-      const sids={japan:'summary-japan', hdv:'summary-hdv'};
-      renderTable(list, ids[type], sids[type]||null);
-    }
-    function getListById(tid){ return tid==='stock-table-japan'?japanStocks: tid==='stock-table-us'?usStocks: tid==='stock-table-reit'?reitStocks: hdvStocks; }
-    function showMemo(text){ document.getElementById('memoContent').innerText=text||'（メモは登録されていません）'; document.getElementById('memoModal').style.display='block'; document.getElementById('modalOverlay').style.display='block'; }
-    function closeMemo(){ document.getElementById('memoModal').style.display='none'; document.getElementById('modalOverlay').style.display='none'; }
-    // 初期描画
-    renderTable(japanStocks,'stock-table-japan','summary-japan');
-    renderTable(reitStocks,'stock-table-reit',null);
-    renderTable(usStocks,'stock-table-us',null);
-    renderTable(hdvStocks,'stock-table-hdv','summary-hdv');
-  </script>
+      const table = document.getElementById(tableId);
+      table.innerHTML = '';
+      let totalDividend = 0, totalQuantity = 0;
 
-  <div style="text-align:center; margin-top: 40px;">
-    <a href="https://finance.yahoo.co.jp/quote/89311241" target="_blank">VYM</a> |
-    <a href="https://finance.yahoo.co.jp/quote/89312241" target="_blank">SPYD</a> |
-    <a href="https://finance.yahoo.co.jp/quote/8931224C" target="_blank">SCHD</a> |
-    <a href="https://finance.yahoo.co.jp/quote/8931123C" target="_blank">SBI高配当</a>
-  </div>
-</body>
-</html>
+      stockList.forEach((stock, i) => {
+        stock.quantity = stock.quantity || 0;
+        let yieldCalc = '0.00', investAmount = '-';
+
+        if (tableId === 'stock-table-us' || tableId === 'stock-table-reit') {
+          // 米国ETF・日本ETFの場合
+          yieldCalc = stock.basePrice ? (stock.dividend / stock.basePrice * 100).toFixed(2) : '0.00';
+          const val = stock.basePrice ? stock.dividend / stock.basePrice : 0;
+          investAmount = val > 0 ? Math.round(((stock.targetIncomePerDay || 87) / val) / 100) * 100 : '-';
+        } else {
+          // 日本株・HDVの場合
+          yieldCalc = stock.price ? (stock.dividend / stock.price * 100).toFixed(2) : '0.00';
+        }
+
+        const isOk = stock.targetYield !== undefined ? yieldCalc >= stock.targetYield : null;
+        const nameCell = `<span style="cursor:pointer;text-decoration:underline;" onclick="showMemo('${stock.memo || ''}')">${stock.name}</span>`;
+        const tr = document.createElement('tr');
+
+        // テーブルごとの表示列定義
+        if (tableId === 'stock-table-us' || tableId === 'stock-table-reit') {
+          tr.innerHTML = `<td>${nameCell}</td><td>${stock.dividend}</td><td><input type="number" min="0" value="${stock.basePrice}" onchange="updateBasePrice('${tableId}',null,${i},this.value)"></td><td>${yieldCalc}</td><td>${investAmount}</td>`;
+        } else if (tableId === 'stock-table-hdv') {
+          tr.innerHTML = `<td>${nameCell}</td><td>${stock.dividend}</td><td><input type="number" min="1" value="${stock.price}" onchange="updatePrice('${tableId}','summary-hdv',${i},this.value)"></td><td><input type="number" min="0" value="${stock.quantity}" onchange="updateQuantity('${tableId}','summary-hdv',${i},this.value)"></td><td>${yieldCalc}</td>`;
+        } else {
+          // 日本株（stock-table-japan）：株数入力欄を削除
+          tr.innerHTML = `<td>${nameCell}</td><td>${stock.dividend}</td><td>${stock.targetYield}</td><td><input type="number" min="1" value="${stock.price}" onchange="updatePrice('${tableId}',null,${i},this.value)"></td><td>${yieldCalc}</td><td class="${isOk ? 'ok' : 'ng'}">${isOk ? 'OK' : 'NG'}</td>`;
+        }
+
+        table.appendChild(tr);
+
+        if (stock.quantity) {
+          totalDividend += stock.dividend * stock.quantity;
+          totalQuantity += stock.quantity;
+        }
+      });
+
+      if (summaryId) {
+        document.getElementById(summaryId).innerText = `合計配当金: ${total
