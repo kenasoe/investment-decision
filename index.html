@@ -124,6 +124,8 @@
 
     function renderTable(stockList, tableId, summaryId) {
       const table = document.getElementById(tableId);
+      if (!table) return; // エラー回避：テーブルが見つからなければ何もしない
+      
       table.innerHTML = '';
       let totalDividend = 0, totalQuantity = 0;
 
@@ -131,28 +133,30 @@
         stock.quantity = stock.quantity || 0;
         let yieldCalc = '0.00', investAmount = '-';
 
+        // 利回りなどの計算
         if (tableId === 'stock-table-us' || tableId === 'stock-table-reit') {
-          // 米国ETF・日本ETFの場合
+          // 米国・日本ETF
           yieldCalc = stock.basePrice ? (stock.dividend / stock.basePrice * 100).toFixed(2) : '0.00';
           const val = stock.basePrice ? stock.dividend / stock.basePrice : 0;
           investAmount = val > 0 ? Math.round(((stock.targetIncomePerDay || 87) / val) / 100) * 100 : '-';
         } else {
-          // 日本株・HDVの場合
+          // 日本株・HDV
           yieldCalc = stock.price ? (stock.dividend / stock.price * 100).toFixed(2) : '0.00';
         }
 
-        const isOk = stock.targetYield !== undefined ? yieldCalc >= stock.targetYield : null;
+        const isOk = stock.targetYield !== undefined ? parseFloat(yieldCalc) >= stock.targetYield : null;
         const nameCell = `<span style="cursor:pointer;text-decoration:underline;" onclick="showMemo('${stock.memo || ''}')">${stock.name}</span>`;
         const tr = document.createElement('tr');
 
-        // テーブルごとの表示列定義
+        // テーブルごとの表示列（ここが崩れると表示がおかしくなる）
         if (tableId === 'stock-table-us' || tableId === 'stock-table-reit') {
           tr.innerHTML = `<td>${nameCell}</td><td>${stock.dividend}</td><td><input type="number" min="0" value="${stock.basePrice}" onchange="updateBasePrice('${tableId}',null,${i},this.value)"></td><td>${yieldCalc}</td><td>${investAmount}</td>`;
         } else if (tableId === 'stock-table-hdv') {
           tr.innerHTML = `<td>${nameCell}</td><td>${stock.dividend}</td><td><input type="number" min="1" value="${stock.price}" onchange="updatePrice('${tableId}','summary-hdv',${i},this.value)"></td><td><input type="number" min="0" value="${stock.quantity}" onchange="updateQuantity('${tableId}','summary-hdv',${i},this.value)"></td><td>${yieldCalc}</td>`;
         } else {
-          // 日本株（stock-table-japan）：株数入力欄を削除
-          tr.innerHTML = `<td>${nameCell}</td><td>${stock.dividend}</td><td>${stock.targetYield}</td><td><input type="number" min="1" value="${stock.price}" onchange="updatePrice('${tableId}',null,${i},this.value)"></td><td>${yieldCalc}</td><td class="${isOk ? 'ok' : 'ng'}">${isOk ? 'OK' : 'NG'}</td>`;
+          // 日本株：株数カラムなし版
+          // updatePriceの第2引数に null を渡すとHTML上でエラーになりやすいため ''(空文字)にする
+          tr.innerHTML = `<td>${nameCell}</td><td>${stock.dividend}</td><td>${stock.targetYield}</td><td><input type="number" min="1" value="${stock.price}" onchange="updatePrice('${tableId}','',${i},this.value)"></td><td>${yieldCalc}</td><td class="${isOk ? 'ok' : 'ng'}">${isOk ? 'OK' : 'NG'}</td>`;
         }
 
         table.appendChild(tr);
@@ -163,5 +167,71 @@
         }
       });
 
+      // 合計表示（ここがエラーの原因になりやすいので安全確認を追加）
       if (summaryId) {
-        document.getElementById(summaryId).innerText = `合計配当金: ${total
+        const summaryEl = document.getElementById(summaryId);
+        if (summaryEl) {
+           summaryEl.innerText = `合計配当金: ${totalDividend.toLocaleString()} 円 / 合計株数: ${totalQuantity.toLocaleString()} 株`;
+        }
+      }
+    }
+
+    // データ更新用の関数群
+    function updateQuantity(tid, sid, i, val) {
+      getListById(tid)[i].quantity = parseInt(val) || 0;
+      renderTable(getListById(tid), tid, sid);
+    }
+    function updatePrice(tid, sid, i, val) {
+      getListById(tid)[i].price = parseFloat(val) || 0;
+      // sidが空文字の場合は null として扱う
+      renderTable(getListById(tid), tid, sid === '' ? null : sid);
+    }
+    function updateBasePrice(tid, sid, i, val) {
+      getListById(tid)[i].basePrice = parseFloat(val) || 0;
+      renderTable(getListById(tid), tid, sid === '' ? null : sid);
+    }
+
+    function resetQuantities(type) {
+      const list = (type === 'japan' ? japanStocks : type === 'us' ? usStocks : type === 'reit' ? reitStocks : hdvStocks);
+      list.forEach(s => { if ('quantity' in s) s.quantity = 0; });
+      
+      const ids = { japan: 'stock-table-japan', us: 'stock-table-us', reit: 'stock-table-reit', hdv: 'stock-table-hdv' };
+      // 日本株のsummaryIdは null
+      const sids = { japan: null, hdv: 'summary-hdv' }; 
+      
+      renderTable(list, ids[type], sids[type] || null);
+    }
+
+    function getListById(tid) {
+      if (tid === 'stock-table-japan') return japanStocks;
+      if (tid === 'stock-table-us') return usStocks;
+      if (tid === 'stock-table-reit') return reitStocks;
+      return hdvStocks;
+    }
+
+    function showMemo(text) {
+      document.getElementById('memoContent').innerText = text || '（メモは登録されていません）';
+      document.getElementById('memoModal').style.display = 'block';
+      document.getElementById('modalOverlay').style.display = 'block';
+    }
+    function closeMemo() {
+      document.getElementById('memoModal').style.display = 'none';
+      document.getElementById('modalOverlay').style.display = 'none';
+    }
+
+    // 初期描画実行
+    // 日本株は summaryId を null に設定
+    renderTable(japanStocks, 'stock-table-japan', null);
+    renderTable(reitStocks, 'stock-table-reit', null);
+    renderTable(usStocks, 'stock-table-us', null);
+    renderTable(hdvStocks, 'stock-table-hdv', 'summary-hdv');
+  </script>
+
+  <div style="text-align:center; margin-top: 40px;">
+    <a href="https://finance.yahoo.co.jp/quote/89311241" target="_blank">VYM</a> |
+    <a href="https://finance.yahoo.co.jp/quote/89312241" target="_blank">SPYD</a> |
+    <a href="https://finance.yahoo.co.jp/quote/8931224C" target="_blank">SCHD</a> |
+    <a href="https://finance.yahoo.co.jp/quote/8931123C" target="_blank">SBI高配当</a>
+  </div>
+</body>
+</html>
