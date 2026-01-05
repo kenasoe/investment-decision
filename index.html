@@ -11,8 +11,7 @@
     table { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
     th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
     th { background-color: #eee; }
-    .ok { color: green; font-weight: bold; }
-    .ng { color: red; font-weight: bold; }
+    .future-val { font-weight: bold; color: #0056b3; }
     input[type="number"] { width: 80px; text-align: right; }
     @media (max-width: 480px) {
       body { font-size: 16px; }
@@ -35,7 +34,7 @@
         <th>目標利回り（%）</th>
         <th>株価（円）</th>
         <th>利回り（%）</th>
-        <th>判定</th>
+        <th>2034利回（%）</th>
       </tr>
     </thead>
     <tbody id="stock-table-japan"></tbody>
@@ -92,42 +91,46 @@
   <div id="modalOverlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.4); z-index:9998;" onclick="closeMemo()"></div>
 
   <script>
+    // futureMultiplier: 2034年想定利回りを計算するための係数（指定がなければ1.0）
     const japanStocks = [
-      { name: 'JT(5106)', dividend: 234, targetYield: 4.5, price: 5636, memo: '過去は4000円未満で買っている JCR:AA+ R&I:AA 訴訟リスク内包しつつも高格付 理論5106' },
-      { name: '積水ハウス(4591)', dividend: 144, targetYield: 4.6, price: 3502, memo: '減配可能性低い JCR:AA R&I:AA 理論4591' },
-      { name: '王子HD(1314)', dividend: 36, targetYield: 4.0, price: 883, memo: '海外4割 成熟企業 配当無理のない水準 JCR:AA- R&I:A+ 理論1314' },
-      { name: '第一生命', dividend: 51, targetYield: 4.0, price: 1334, memo: '国内成熟 海外成長 コア補完銘柄' },
-      { name: '野村不動産', dividend: 36, targetYield: 4.0, price: 967, memo: '配当無理のない水準、DOE導入 理論1284' },
-      { name: '東京海上(4654)', dividend: 211, targetYield: 3.5, price: 5911, memo: 'JCR:AAA 理論4654' },
-      { name: '大和ハウス(4万)', dividend: 175, targetYield: 3.5, price: 5231, memo: 'JCR:AA R&I:AA- 理論5959' },
-      { name: 'NTT(229)', dividend: 5.3, targetYield: 3.5, price: 159, memo: '安定増配×1.6 JCR:AAA 理論229' },
-      { name: 'INPEX(5118)', dividend: 100, targetYield: 4.5, price: 3116, memo: '増配×1.9　PBR0.5台→割安 JCR:AA+ R&I:AA 理論5118' },
-      { name: 'アサヒ', dividend: 52, targetYield: 3.5, price: 1664, memo: 'JCR:AA- R&I:A+ 理論2650' },
-      { name: 'キリン', dividend: 74, targetYield: 3.5, price: 2363, memo: 'R&I:A+ 理論3209' },
-      { name: '三菱商事(3211)', dividend: 110, targetYield: 3.6, price: 3653, memo: '4.0→3.8へ引下げ R&I:AA 理論3211' },
-      { name: 'ENEOS(1460)', dividend: 34, targetYield: 4.5, price: 1121, memo: '増配×1.2 ガソリン代の一部に JCR:AA- R&I:A+ 理論1460' },
-      { name: '明治(4447)', dividend: 105, targetYield: 3, price: 3529, memo: '〇' },
-      { name: '三菱UFJ(〇)', dividend: 74, targetYield: 3.5, price: 2545, memo: '理論〇' },
-      { name: 'トヨタ(3505)', dividend: 95, targetYield: 3.5, price: 3399, memo: 'JCR:AAA R&I:AAA 理論3505' },
-      { name: '伊藤忠(10万)', dividend: 42, targetYield: 3.5, price: 1999, memo: '理論1338' },
-      { name: '野村HD→×', dividend: 57, targetYield: 4.0, price: 1291, memo: '配当増減、景気敏感株 JCR:AA- R&I:A 理論1597' },
-      { name: 'LIXIL(2272)→×', dividend: 90, targetYield: 5.0, price: 1898, memo: '利益超の配当、低利益 JCR:A+ R&I:A 理論2272' },
-      { name: '電通(11万)→×', dividend: 0, targetYield: 4.5, price: 3469, memo: '安定増配×1.5 R&I:AA- 理論1470' }
+      { name: 'JT(5106)', dividend: 234, targetYield: 4.5, price: 5636, memo: '過去は4000円未満で買っている JCR:AA+ R&I:AA 訴訟リスク内包しつつも高格付 理論5106', futureMultiplier: 1.0 },
+      { name: '積水ハウス(4591)', dividend: 144, targetYield: 4.6, price: 3502, memo: '減配可能性低い JCR:AA R&I:AA 理論4591', futureMultiplier: 1.0 },
+      { name: '王子HD(1314)', dividend: 36, targetYield: 4.0, price: 883, memo: '海外4割 成熟企業 配当無理のない水準 JCR:AA- R&I:A+ 理論1314', futureMultiplier: 1.0 },
+      { name: '第一生命', dividend: 51, targetYield: 4.0, price: 1334, memo: '国内成熟 海外成長 コア補完銘柄', futureMultiplier: 1.0 },
+      { name: '野村不動産', dividend: 36, targetYield: 4.0, price: 967, memo: '配当無理のない水準、DOE導入 理論1284', futureMultiplier: 1.0 },
+      { name: '東京海上(4654)', dividend: 211, targetYield: 3.5, price: 5911, memo: 'JCR:AAA 理論4654', futureMultiplier: 1.0 },
+      { name: '大和ハウス(4万)', dividend: 175, targetYield: 3.5, price: 5231, memo: 'JCR:AA R&I:AA- 理論5959', futureMultiplier: 1.0 },
+      { name: 'NTT(229)', dividend: 5.3, targetYield: 3.5, price: 159, memo: '安定増配×1.6 JCR:AAA 理論229', futureMultiplier: 1.6 },
+      { name: 'INPEX(5118)', dividend: 100, targetYield: 4.5, price: 3116, memo: '増配×1.9 PBR0.5台→割安 JCR:AA+ R&I:AA 理論5118', futureMultiplier: 1.9 },
+      { name: 'アサヒ', dividend: 52, targetYield: 3.5, price: 1664, memo: 'JCR:AA- R&I:A+ 理論2650', futureMultiplier: 1.0 },
+      { name: 'キリン', dividend: 74, targetYield: 3.5, price: 2363, memo: 'R&I:A+ 理論3209', futureMultiplier: 1.0 },
+      { name: '三菱商事(3211)', dividend: 110, targetYield: 3.6, price: 3653, memo: '4.0→3.8へ引下げ R&I:AA 理論3211', futureMultiplier: 1.0 },
+      { name: 'ENEOS(1460)', dividend: 34, targetYield: 4.5, price: 1121, memo: '増配×1.2 ガソリン代の一部に JCR:AA- R&I:A+ 理論1460', futureMultiplier: 1.2 },
+      { name: '明治(4447)', dividend: 105, targetYield: 3, price: 3529, memo: '〇', futureMultiplier: 1.0 },
+      { name: '三菱UFJ(〇)', dividend: 74, targetYield: 3.5, price: 2545, memo: '理論〇', futureMultiplier: 1.0 },
+      { name: 'トヨタ(3505)', dividend: 95, targetYield: 3.5, price: 3399, memo: 'JCR:AAA R&I:AAA 理論3505', futureMultiplier: 1.0 },
+      { name: '伊藤忠(10万)', dividend: 42, targetYield: 3.5, price: 1999, memo: '理論1338', futureMultiplier: 1.0 },
+      { name: '野村HD→×', dividend: 57, targetYield: 4.0, price: 1291, memo: '配当増減、景気敏感株 JCR:AA- R&I:A 理論1597', futureMultiplier: 1.0 },
+      { name: 'LIXIL(2272)→×', dividend: 90, targetYield: 5.0, price: 1898, memo: '利益超の配当、低利益 JCR:A+ R&I:A 理論2272', futureMultiplier: 1.0 },
+      { name: '電通(11万)→×', dividend: 0, targetYield: 4.5, price: 3469, memo: '安定増配×1.5 R&I:AA- 理論1470', futureMultiplier: 1.5 }
     ];
+
     const usStocks = [
       { name: 'VYM', dividend: 310, basePrice: 12186, memo: '今の高配当銘柄400銘柄 87円', targetIncomePerDay: 87 },
       { name: 'SPYD', dividend: 425, basePrice: 11848, memo: 'SP500から80銘柄 配当中心、リスク高め 87円', targetIncomePerDay: 87 },
       { name: 'SCHD', dividend: 310, basePrice: 10304, memo: '10年以上の増配企業 100銘柄 174円', targetIncomePerDay: 174 }
     ];
+
     const reitStocks = [
       { name: 'ETF1489', dividend: 89, basePrice: 2851, memo: '50/日経225 コスト0.37', targetIncomePerDay: 202.5 },
       { name: 'SBI日本高配当', dividend: 510, basePrice: 14819, memo: '中型株へも投資 コスト0.1', targetIncomePerDay: 202.5 }
     ];
+
     const hdvStocks = [ { name: 'HDV', dividend: 5.7, price: 237.7, memo: '75銘柄 安全志向', quantity: 0 } ];
 
     function renderTable(stockList, tableId, summaryId) {
       const table = document.getElementById(tableId);
-      if (!table) return; // エラー回避：テーブルが見つからなければ何もしない
+      if (!table) return;
       
       table.innerHTML = '';
       let totalDividend = 0, totalQuantity = 0;
@@ -136,7 +139,7 @@
         stock.quantity = stock.quantity || 0;
         let yieldCalc = '0.00', investAmount = '-';
 
-        // 利回りなどの計算
+        // 利回り計算
         if (tableId === 'stock-table-us' || tableId === 'stock-table-reit') {
           // 米国・日本ETF
           yieldCalc = stock.basePrice ? (stock.dividend / stock.basePrice * 100).toFixed(2) : '0.00';
@@ -147,19 +150,29 @@
           yieldCalc = stock.price ? (stock.dividend / stock.price * 100).toFixed(2) : '0.00';
         }
 
-        const isOk = stock.targetYield !== undefined ? parseFloat(yieldCalc) >= stock.targetYield : null;
         const nameCell = `<span style="cursor:pointer;text-decoration:underline;" onclick="showMemo('${stock.memo || ''}')">${stock.name}</span>`;
         const tr = document.createElement('tr');
 
-        // テーブルごとの表示列（ここが崩れると表示がおかしくなる）
+        // テーブルごとの表示生成
         if (tableId === 'stock-table-us' || tableId === 'stock-table-reit') {
+          // 米国株・ETF
           tr.innerHTML = `<td>${nameCell}</td><td>${stock.dividend}</td><td><input type="number" min="0" value="${stock.basePrice}" onchange="updateBasePrice('${tableId}',null,${i},this.value)"></td><td>${yieldCalc}</td><td>${investAmount}</td>`;
+        
         } else if (tableId === 'stock-table-hdv') {
+          // HDV
           tr.innerHTML = `<td>${nameCell}</td><td>${stock.dividend}</td><td><input type="number" min="1" value="${stock.price}" onchange="updatePrice('${tableId}','summary-hdv',${i},this.value)"></td><td><input type="number" min="0" value="${stock.quantity}" onchange="updateQuantity('${tableId}','summary-hdv',${i},this.value)"></td><td>${yieldCalc}</td>`;
+        
         } else {
-          // 日本株：株数カラムなし版
-          // updatePriceの第2引数に null を渡すとHTML上でエラーになりやすいため ''(空文字)にする
-          tr.innerHTML = `<td>${nameCell}</td><td>${stock.dividend}</td><td>${stock.targetYield}</td><td><input type="number" min="1" value="${stock.price}" onchange="updatePrice('${tableId}','',${i},this.value)"></td><td>${yieldCalc}</td><td class="${isOk ? 'ok' : 'ng'}">${isOk ? 'OK' : 'NG'}</td>`;
+          // 日本株（ここを修正：判定 → 2034利回）
+          const multiplier = stock.futureMultiplier || 1.0;
+          const futureYield = (parseFloat(yieldCalc) * multiplier).toFixed(2);
+          
+          tr.innerHTML = `<td>${nameCell}</td>
+                          <td>${stock.dividend}</td>
+                          <td>${stock.targetYield}</td>
+                          <td><input type="number" min="1" value="${stock.price}" onchange="updatePrice('${tableId}','',${i},this.value)"></td>
+                          <td>${yieldCalc}</td>
+                          <td class="future-val">${futureYield}</td>`;
         }
 
         table.appendChild(tr);
@@ -170,7 +183,7 @@
         }
       });
 
-      // 合計表示（ここがエラーの原因になりやすいので安全確認を追加）
+      // 合計表示
       if (summaryId) {
         const summaryEl = document.getElementById(summaryId);
         if (summaryEl) {
@@ -186,7 +199,6 @@
     }
     function updatePrice(tid, sid, i, val) {
       getListById(tid)[i].price = parseFloat(val) || 0;
-      // sidが空文字の場合は null として扱う
       renderTable(getListById(tid), tid, sid === '' ? null : sid);
     }
     function updateBasePrice(tid, sid, i, val) {
@@ -199,7 +211,6 @@
       list.forEach(s => { if ('quantity' in s) s.quantity = 0; });
       
       const ids = { japan: 'stock-table-japan', us: 'stock-table-us', reit: 'stock-table-reit', hdv: 'stock-table-hdv' };
-      // 日本株のsummaryIdは null
       const sids = { japan: null, hdv: 'summary-hdv' }; 
       
       renderTable(list, ids[type], sids[type] || null);
@@ -223,7 +234,6 @@
     }
 
     // 初期描画実行
-    // 日本株は summaryId を null に設定
     renderTable(japanStocks, 'stock-table-japan', null);
     renderTable(reitStocks, 'stock-table-reit', null);
     renderTable(usStocks, 'stock-table-us', null);
