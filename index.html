@@ -31,7 +31,6 @@
       <tr>
         <th>銘柄名</th>
         <th>配当金（円）</th>
-        <th>目標利回り（%）</th>
         <th>株価（円）</th>
         <th>利回り（%）</th>
         <th>2034利回（%）</th>
@@ -163,13 +162,12 @@
           tr.innerHTML = `<td>${nameCell}</td><td>${stock.dividend}</td><td><input type="number" min="1" value="${stock.price}" onchange="updatePrice('${tableId}','summary-hdv',${i},this.value)"></td><td><input type="number" min="0" value="${stock.quantity}" onchange="updateQuantity('${tableId}','summary-hdv',${i},this.value)"></td><td>${yieldCalc}</td>`;
         
         } else {
-          // 日本株（ここを修正：判定 → 2034利回）
+          // 日本株（ここを修正：目標利回り列を削除）
           const multiplier = stock.futureMultiplier || 1.0;
           const futureYield = (parseFloat(yieldCalc) * multiplier).toFixed(2);
           
           tr.innerHTML = `<td>${nameCell}</td>
                           <td>${stock.dividend}</td>
-                          <td>${stock.targetYield}</td>
                           <td><input type="number" min="1" value="${stock.price}" onchange="updatePrice('${tableId}','',${i},this.value)"></td>
                           <td>${yieldCalc}</td>
                           <td class="future-val">${futureYield}</td>`;
